@@ -18,7 +18,7 @@ from collections import OrderedDict
 
 class CSVSaver:
     """
-    save the data in a dictionary format cache, and write to a CSV file finally.
+    Save the data in a dictionary format cache, and write to a CSV file finally.
     Typically, the data can be classification predictions, call `save` for single data
     or call `save_batch` to save a batch of data together, and call `finalize` to write
     the cached data into CSV file. If no meta data provided, use index from 0 to save data.

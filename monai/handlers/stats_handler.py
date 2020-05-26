@@ -20,8 +20,9 @@ DEFAULT_TAG = "Loss"
 
 
 class StatsHandler(object):
-    """StatsHandler defines a set of Ignite Event-handlers for all the log printing logics.
-    It's can be used for any Ignite Engine(trainer, validator and evaluator).
+    """
+    StatsHandler defines a set of Ignite Event-handlers for all the log printing logics.
+    It can be used for any Ignite Engine(trainer, validator and evaluator).
     And it can support logging for epoch level and iteration level with pre-defined loggers.
 
     Default behaviors:
@@ -42,16 +43,15 @@ class StatsHandler(object):
         key_var_format=DEFAULT_KEY_VAL_FORMAT,
     ):
         """
-
         Args:
             epoch_print_logger (Callable): customized callable printer for epoch level logging.
-                must accept parameter "engine", use default printer if None.
+                Must accept parameter "engine", use default printer if None.
             iteration_print_logger (Callable): customized callable printer for iteration level logging.
-                must accept parameter "engine", use default printer if None.
+                Must accept parameter "engine", use default printer if None.
             output_transform (Callable): a callable that is used to transform the
                 ``ignite.engine.output`` into a scalar to print, or a dictionary of {key: scalar}.
-                in the latter case, the output string will be formatted as key: value.
-                by default this value logging happens when every iteration completed.
+                In the latter case, the output string will be formatted as key: value.
+                By default this value logging happens when every iteration completed.
             global_epoch_transform (Callable): a callable that is used to customize global epoch number.
                 For example, in evaluation, the evaluator engine might want to print synced epoch number
                 with the trainer engine.
@@ -71,7 +71,8 @@ class StatsHandler(object):
         self.key_var_format = key_var_format
 
     def attach(self, engine: Engine):
-        """Register a set of Ignite Event-Handlers to a specified Ignite engine.
+        """
+        Register a set of Ignite Event-Handlers to a specified Ignite engine.
 
         Args:
             engine (ignite.engine): Ignite Engine, it can be a trainer, validator or evaluator.
@@ -87,8 +88,9 @@ class StatsHandler(object):
             engine.add_event_handler(Events.EXCEPTION_RAISED, self.exception_raised)
 
     def epoch_completed(self, engine: Engine):
-        """handler for train or validation/evaluation epoch completed Event.
-        Print epoch level log, default values are from Ignite state.metrics dict.
+        """
+        Handler for train or validation/evaluation epoch completed Event.
+        Print epoch level log, default values are from ignite state.metrics dict.
 
         Args:
             engine (ignite.engine): Ignite Engine, it can be a trainer, validator or evaluator.
@@ -100,8 +102,9 @@ class StatsHandler(object):
             self._default_epoch_print(engine)
 
     def iteration_completed(self, engine: Engine):
-        """handler for train or validation/evaluation iteration completed Event.
-        Print iteration level log, default values are from Ignite state.logs dict.
+        """
+        Handler for train or validation/evaluation iteration completed Event.
+        Print iteration level log, default values are from ignite state.logs dict.
 
         Args:
             engine (ignite.engine): Ignite Engine, it can be a trainer, validator or evaluator.
@@ -113,7 +116,8 @@ class StatsHandler(object):
             self._default_iteration_print(engine)
 
     def exception_raised(self, engine: Engine, e):
-        """handler for train or validation/evaluation exception raised Event.
+        """
+        Handler for train or validation/evaluation exception raised Event.
         Print the exception information and traceback.
 
         Args:
@@ -126,8 +130,9 @@ class StatsHandler(object):
         # traceback.print_exc()
 
     def _default_epoch_print(self, engine: Engine):
-        """Execute epoch level log operation based on Ignite engine.state data.
-        print the values from Ignite state.metrics dict.
+        """
+        Execute epoch level log operation based on Ignite engine.state data.
+        Print the values from ignite state.metrics dict.
 
         Args:
             engine (ignite.engine): Ignite Engine, it can be a trainer, validator or evaluator.
@@ -146,8 +151,9 @@ class StatsHandler(object):
         self.logger.info(out_str)
 
     def _default_iteration_print(self, engine: Engine):
-        """Execute iteration log operation based on Ignite engine.state data.
-        Print the values from Ignite state.logs dict.
+        """
+        Execute iteration log operation based on Ignite engine.state data.
+        Print the values from ignite state.logs dict.
         Default behavior is to print loss from output[1], skip if output[1] is not loss.
 
         Args:

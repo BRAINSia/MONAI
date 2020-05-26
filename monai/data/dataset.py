@@ -75,7 +75,7 @@ class PersistentDataset(Dataset):
 
     For a composite transform like
 
-    .. code-block:: python
+        .. code-block:: python
 
         [ LoadNiftid(keys=['image', 'label']),
           Orientationd(keys=['image', 'label'], axcodes='RAS'),
@@ -84,10 +84,13 @@ class PersistentDataset(Dataset):
                                  pos=1, neg=1, num_samples=4, image_key='image', image_threshold=0),
           ToTensord(keys=['image', 'label'])]
 
-    Upon first use a filename based dataset will be processed by the transform for the
-    [LoadNiftid, Orientationd, ScaleIntensityRanged] and the resulting tensor written to
-    the `cache_dir` before applying the remaining random dependant transforms
-    [RandCropByPosNegLabeld, ToTensord] elements for use in the analysis.
+     Upon first use a filename based dataset will be processed by the transform for the
+     [LoadNiftid, Orientationd, ScaleIntensityRanged] and the resulting tensor written to
+     the `cache_dir` before applying the remaining random dependent transforms
+     [RandCropByPosNegLabeld, ToTensord] elements for use in the analysis.
+
+     Subsequent uses of a dataset directly read pre-processed results from `cache_dir`
+     followed by applying the random dependant parts of transform processing.
 
     Subsequent uses of a dataset directly read pre-processed results from `cache_dir`
     followed by applying the random dependant parts of transform processing.
@@ -130,7 +133,7 @@ class PersistentDataset(Dataset):
         """
         Process the data from before the first random transform to the final state ready for evaluation.
         Args:
-            item_transformed: The data to be transformed (already process upto the first random transform)
+            item_transformed: The data to be transformed (already processed up to the first random transform)
         Returns:
             the transformed element through the random transforms
         """
@@ -204,7 +207,7 @@ class CacheDataset(Dataset):
     It is recommended to experiment with different `cache_num` or `cache_rate` to identify the best training speed.
 
     To improve the caching efficiency, please always put as many as possible non-random transforms
-    before the randomised ones when composing the chain of transforms.
+    before the randomized ones when composing the chain of transforms.
 
     For example, if the transform is a `Compose` of::
 
@@ -222,8 +225,8 @@ class CacheDataset(Dataset):
     this dataset will cache the results up to ``ScaleIntensityRanged``, as
     all non-random transforms `LoadNiftid`, `AddChanneld`, `Spacingd`, `Orientationd`, `ScaleIntensityRanged`
     can be cached. During training, the dataset will load the cached results and run
-    ``RandCropByPosNegLabeld`` and ``ToTensord``, as ``RandCropByPosNegLabeld`` is a randomised transform
-    and the outcome not cached.
+    ``RandCropByPosNegLabeld`` and ``ToTensord``, as ``RandCropByPosNegLabeld`` is a randomized transform
+    and the outcome is not cached.
     """
 
     def __init__(self, data, transform, cache_num=sys.maxsize, cache_rate=1.0, num_workers=0):
@@ -248,6 +251,7 @@ class CacheDataset(Dataset):
             if num_workers > 0:
                 self._item_processed = 0
                 self._thread_lock = threading.Lock()
+                # TODO: Extra comma inside mapping function
                 with ThreadPool(num_workers) as p:
                     p.map(
                         self._load_cache_item_thread,
@@ -286,6 +290,7 @@ class CacheDataset(Dataset):
                 data = apply_transform(_transform, data)
         else:
             # no cache for this data, execute all the transforms directly
+            # TODO: Understand this line
             data = super(CacheDataset, self).__getitem__(index)
         return data
 
@@ -315,6 +320,7 @@ class ZipDataset(torch.utils.data.Dataset):
         """
         Args:
             datasets (list or tuple): list of datasets to zip together.
+            transform (Callable, optional): transforms to execute operations on input data.
         """
         self.datasets = list(datasets)
         self.len = min([len(dataset) for dataset in self.datasets])
@@ -324,6 +330,7 @@ class ZipDataset(torch.utils.data.Dataset):
         return self.len
 
     def __getitem__(self, index):
+        # TODO: Add documentation
         def to_list(x):
             return list(x) if isinstance(x, (tuple, list)) else [x]
 
