@@ -317,7 +317,7 @@ class ZipDataset(torch.utils.data.Dataset):
             datasets (list or tuple): list of datasets to zip together.
         """
         self.datasets = list(datasets)
-        self.len = min([len(dataset) for dataset in self.datasets])
+        self.len = min((len(dataset) for dataset in self.datasets))
         self.transform = transform
 
     def __len__(self):

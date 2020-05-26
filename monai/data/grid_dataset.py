@@ -15,6 +15,7 @@ import torch
 from torch.utils.data import IterableDataset
 
 from monai.data.utils import iter_patch
+from monai.utils import ensure_tuple
 
 
 class GridPatchDataset(IterableDataset):
@@ -39,7 +40,7 @@ class GridPatchDataset(IterableDataset):
         """
 
         self.dataset = dataset
-        self.patch_size = (None,) + tuple(patch_size)
+        self.patch_size = (None,) + ensure_tuple(patch_size)
         self.start_pos = start_pos
         self.pad_mode = pad_mode
         self.pad_opts = pad_opts
