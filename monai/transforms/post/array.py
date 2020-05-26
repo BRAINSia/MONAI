@@ -43,6 +43,6 @@ class SplitChannel(Transform):
         n_classes = img.shape[1]
         outputs = list()
         for i in range(n_classes):
-            outputs.append(img[:, i : i + 1])
+            outputs.append(img[:, i: i + 1])
 
         return outputs

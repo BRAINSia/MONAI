@@ -69,7 +69,7 @@ class LoadNifti(Transform):
             header["as_closest_canonical"] = self.as_closest_canonical
             ndim = img.header["dim"][0]
             spatial_rank = min(ndim, 3)
-            header["spatial_shape"] = img.header["dim"][1 : spatial_rank + 1]
+            header["spatial_shape"] = img.header["dim"][1: spatial_rank + 1]
 
             if self.as_closest_canonical:
                 img = nib.as_closest_canonical(img)

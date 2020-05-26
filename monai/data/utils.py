@@ -20,10 +20,10 @@ import numpy as np
 from monai.utils import ensure_tuple_size
 from monai.networks.layers.simplelayers import GaussianFilter
 
-import enum
+from enum import IntEnum
 
 
-class InterpolationCode(enum.IntEnum):
+class InterpolationCode(IntEnum):
     """
     A convenience enumeration to make code uses more expressive
     """
@@ -302,7 +302,7 @@ def zoom_affine(affine, scale, diagonal=True):
     d = len(affine) - 1
     if len(scale) < d:  # defaults based on affine
         norm = np.sqrt(np.sum(np.square(affine), 0))[:-1]
-        scale = np.append(scale, norm[len(scale) :])
+        scale = np.append(scale, norm[len(scale):])
     scale = scale[:d]
     scale[scale == 0] = 1.0
     if diagonal:
@@ -435,7 +435,6 @@ def compute_importance_map(patch_size, mode="constant", sigma_scale=0.125, devic
     Returns:
         Tensor of size patch_size.
     """
-    importance_map = None
     if mode == "constant":
         importance_map = torch.ones(patch_size, device=device).float()
     elif mode == "gaussian":
@@ -447,7 +446,7 @@ def compute_importance_map(patch_size, mode="constant", sigma_scale=0.125, devic
         pt_gaussian = GaussianFilter(len(patch_size), sigmas).to(device)
         importance_map = pt_gaussian(importance_map.unsqueeze(0).unsqueeze(0))
         importance_map = importance_map.squeeze(0).squeeze(0)
-        importance_map = importance_map / torch.max(importance_map)
+        importance_map /= torch.max(importance_map)
         importance_map = importance_map.float()
 
         # importance_map cannot be 0, otherwise we may end up with nans!

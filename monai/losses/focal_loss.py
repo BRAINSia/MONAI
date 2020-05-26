@@ -95,7 +95,7 @@ class FocalLoss(_WeightedLoss):
             at = at.gather(1, t.long())  # selection of the weights  => N,1,H*W
             at = torch.squeeze(at, dim=1)  # N,1,H*W => N,H*W
             # Multiply the log proba by their weights.
-            logpt = logpt * at
+            logpt *= at
 
         # Compute the loss mini-batch.
         weight = torch.pow(-pt + 1.0, self.gamma)
