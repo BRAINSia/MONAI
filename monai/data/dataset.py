@@ -290,7 +290,6 @@ class CacheDataset(Dataset):
                 data = apply_transform(_transform, data)
         else:
             # no cache for this data, execute all the transforms directly
-            # TODO: Understand this line
             data = super(CacheDataset, self).__getitem__(index)
         return data
 
@@ -330,7 +329,6 @@ class ZipDataset(torch.utils.data.Dataset):
         return self.len
 
     def __getitem__(self, index):
-        # TODO: Add documentation
         def to_list(x):
             return list(x) if isinstance(x, (tuple, list)) else [x]
 
