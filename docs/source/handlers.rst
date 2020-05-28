@@ -21,36 +21,30 @@ CSV saver
 .. autoclass:: ClassificationSaver
     :members:
 
-
 Mean Dice metrics handler
 -------------------------
 .. autoclass:: MeanDice
     :members:
-
 
 ROC AUC metrics handler
 -----------------------
 .. autoclass:: ROCAUC
     :members:
 
-
 Metric logger
 -------------
 .. autoclass:: MetricLogger
     :members:
-
 
 Segmentation saver
 ------------------
 .. autoclass:: SegmentationSaver
     :members:
 
-
 Training stats handler
 ----------------------
 .. autoclass:: StatsHandler
     :members:
-
 
 Tensorboard handler
 -------------------

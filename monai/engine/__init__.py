@@ -10,5 +10,3 @@
 # limitations under the License.
 
 from .multi_gpu_supervised_trainer import *
-from .trainer import *
-from .evaluator import *

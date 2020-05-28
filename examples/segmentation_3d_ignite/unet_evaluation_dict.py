@@ -22,8 +22,7 @@ from ignite.engine import Engine
 from torch.utils.data import DataLoader
 
 import monai
-from monai.data import list_data_collate, create_test_image_3d
-from monai.inferers import sliding_window_inference
+from monai.data import list_data_collate, sliding_window_inference, create_test_image_3d
 from monai.networks.utils import predict_segmentation
 from monai.networks.nets import UNet
 from monai.transforms import Compose, LoadNiftid, AsChannelFirstd, ScaleIntensityd, ToTensord
@@ -112,7 +111,6 @@ def main():
         val_ds, batch_size=1, num_workers=4, collate_fn=list_data_collate, pin_memory=torch.cuda.is_available()
     )
     state = evaluator.run(val_loader)
-    print(state)
     shutil.rmtree(tempdir)
 
 

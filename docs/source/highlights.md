@@ -88,10 +88,9 @@ train_transforms = monai.transforms.Compose([
 ])
 # set determinism for reproducibility
 train_transforms.set_random_state(seed=0)
-```
-Users can also enable/disable deterministic training directly:
-```py
-monai.utils.set_determinism(seed=0, additional_settings=None)
+torch.manual_seed(0)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 ```
 
 ### 6. Cache IO and transforms data to accelerate training

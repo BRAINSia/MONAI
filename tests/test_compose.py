@@ -11,7 +11,7 @@
 
 import unittest
 
-from monai.transforms import Compose, Randomizable, AddChannel
+from monai.transforms import Compose, Randomizable
 
 
 class TestCompose(unittest.TestCase):
@@ -93,11 +93,6 @@ class TestCompose(unittest.TestCase):
         c = Compose([_RandomClass(), _RandomClass()])
         with self.assertWarns(Warning):
             c.randomize()
-
-    def test_err_msg(self):
-        transforms = Compose([abs, AddChannel(), round])
-        with self.assertRaisesRegexp(Exception, "AddChannel"):
-            transforms(42.1)
 
 
 if __name__ == "__main__":

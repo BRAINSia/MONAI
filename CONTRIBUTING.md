@@ -48,8 +48,8 @@ Ideally, the new branch should be based on the latest `master` branch.
 1. Wait for the pull request to be merged.
 
 ### Coding style
-Coding style is checked by flake8, using [a flake8 configuration](./setup.cfg) similar to [PyTorch's](https://github.com/pytorch/pytorch/blob/master/.flake8).
-For string definition, [f-string](https://www.python.org/dev/peps/pep-0498/) is recommended to use over `%-print` and `format-print` from python 3.6. So please try to use `f-string` if you need to define any string object.
+Coding style is checked by flake8, using [a flake8 configuration](./setup.cfg) similar to [PyTorch's](https://github.com/pytorch/pytorch/blob/master/.flake8).  
+For string definition, [f-string](https://www.python.org/dev/peps/pep-0498/) is recommended to use over `%-print` and `format-print` from python 3.6. So please try to use `f-string` if you need to define any string object.  
 Python code file formatting could be done locally before submitting a pull request (e.g. using [`psf/Black`](https://github.com/psf/black)), or during the pull request review using MONAI's automatic [code formatting workflow](#automatic-code-formatting).
 
 License information: all source code files should start with this paragraph:
@@ -102,10 +102,8 @@ pip install -r docs/requirements.txt
 cd docs/
 make html
 ```
-The above commands build html documentation. Type `make help` for all supported
-formats, type `make clean` to remove the current build files.  If there are any
-auto-generated files, please run `make clean` command to clean up, before
-submitting a pull request.
+The above commands build html documentation. Type `make help` for all supported formats,
+type `make clean` to remove the current build files.
 
 When new classes or methods are added, it is recommended to:
 - build html documentation locally,
@@ -126,17 +124,12 @@ To run a particular test, for example `tests/test_dice_loss.py`:
 python -m tests.test_dice_loss
 ```
 
-## Linting and code style testing
-
-```bash
-# Install the various static analysis tools for development
-pip install -r requirements-dev.txt
-```
-
 Before submitting a pull request, we recommend that all linting and unit tests
-should pass, by running the following command locally:
+should pass, by running the following commands locally:
 ```
-./runtests.sh --codeformat --coverage
+pip install flake8==3.7.9 flake8-mypy flake8-bugbear flake8-comprehensions flake8-executable flake8-pyi mccabe pycodestyle pyflakes
+flake8 . --count --statistics
+./runtests.sh --coverage
 ```
 
 _If it's not tested, it's broken_

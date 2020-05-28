@@ -126,7 +126,7 @@ def main():
     opt = torch.optim.Adam(net.parameters(), lr)
     device = torch.device("cuda:0")
 
-    # Ignite trainer expects batch=(img, seg) and returns output=loss at every iteration,
+    # ignite trainer expects batch=(img, seg) and returns output=loss at every iteration,
     # user can add output_transform to return other values, like: y_pred, y, etc.
     def prepare_batch(batch, device=None, non_blocking=False):
         return _prepare_batch((batch["img"], batch["seg"]), device, non_blocking)
@@ -155,7 +155,7 @@ def main():
     # add evaluation metric to the evaluator engine
     val_metrics = {metric_name: MeanDice(add_sigmoid=True, to_onehot_y=False)}
 
-    # Ignite evaluator expects batch=(img, seg) and returns output=(y_pred, y) at every iteration,
+    # ignite evaluator expects batch=(img, seg) and returns output=(y_pred, y) at every iteration,
     # user can add output_transform to return other values
     evaluator = create_supervised_evaluator(net, val_metrics, device, True, prepare_batch=prepare_batch)
 
@@ -193,7 +193,6 @@ def main():
 
     train_epochs = 5
     state = trainer.run(train_loader, train_epochs)
-    print(state)
     shutil.rmtree(tempdir)
 
 

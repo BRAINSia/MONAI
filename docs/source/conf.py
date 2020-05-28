@@ -37,7 +37,7 @@ exclude_patterns = [
     "transforms",
     "networks",
     "metrics",
-    "engines",
+    "engine",
     "data",
     "application",
     "config",
@@ -45,7 +45,6 @@ exclude_patterns = [
     "losses",
     "visualize",
     "utils",
-    "inferers",
 ]
 
 
@@ -60,7 +59,7 @@ def generate_apidocs(*args):
     print(f"output_path {output_path}")
     print(f"module_path {module_path}")
     subprocess.check_call(
-        [apidoc_command_path, "-e"]
+        [apidoc_command_path, "-f", "-e"]
         + ["-o", output_path]
         + [module_path]
         + [os.path.join(module_path, p) for p in exclude_patterns]

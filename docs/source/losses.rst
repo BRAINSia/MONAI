@@ -11,8 +11,9 @@ Segmentation Losses
 .. automodule:: monai.losses
 .. currentmodule:: monai.losses
 
+
 `DiceLoss`
-~~~~~~~~~~
+~~~~~~~~~~~
 .. autoclass:: DiceLoss
     :members:
 
@@ -27,6 +28,6 @@ Segmentation Losses
     :members:
 
 `TverskyLoss`
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: TverskyLoss
     :members:

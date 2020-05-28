@@ -55,7 +55,6 @@ Technical documentation is available via `Read the Docs <https://monai.readthedo
    metrics
    data
    engines
-   inferers
    handlers
    visualize
    utils
@@ -78,7 +77,6 @@ Links
 - Issue tracker: https://github.com/Project-MONAI/MONAI/issues
 - Changelog: https://github.com/Project-MONAI/MONAI/blob/master/CHANGELOG.md
 - Wiki: https://github.com/Project-MONAI/MONAI/wiki
-- FAQ: https://github.com/Project-MONAI/MONAI/wiki/Frequently-asked-questions-and-answers
 - Test status: https://github.com/Project-MONAI/MONAI/actions
 - PyPI package: https://pypi.org/project/monai/
 - Docker Hub: https://hub.docker.com/r/projectmonai/monai

@@ -23,8 +23,7 @@ from torch.utils.data import DataLoader
 
 from monai import config
 from monai.handlers import CheckpointLoader, SegmentationSaver, StatsHandler, MeanDice
-from monai.data import NiftiDataset, create_test_image_3d
-from monai.inferers import sliding_window_inference
+from monai.data import NiftiDataset, create_test_image_3d, sliding_window_inference
 from monai.transforms import Compose, AddChannel, ScaleIntensity, ToTensor
 from monai.networks.nets import UNet
 from monai.networks.utils import predict_segmentation
@@ -106,7 +105,6 @@ def main():
     # sliding window inference for one image at every iteration
     loader = DataLoader(ds, batch_size=1, num_workers=1, pin_memory=torch.cuda.is_available())
     state = evaluator.run(loader)
-    print(state)
     shutil.rmtree(tempdir)
 
 

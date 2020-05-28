@@ -13,7 +13,6 @@ import numpy as np
 from torch.utils.data import Dataset
 from monai.transforms import LoadNifti
 from monai.transforms import Randomizable
-from monai.utils.misc import get_seed
 
 
 class NiftiDataset(Dataset, Randomizable):
@@ -59,7 +58,6 @@ class NiftiDataset(Dataset, Randomizable):
         self.seg_transform = seg_transform
         self.image_only = image_only
         self.dtype = dtype
-        self.set_random_state(seed=get_seed())
 
     def __len__(self):
         return len(self.image_files)

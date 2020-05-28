@@ -1,3 +1,4 @@
+
 # This file helps to compute a version number in source trees obtained from
 # git-archive tarball (such as those provided by githubs download-from-tag
 # feature). Distribution tarballs (built by setup.py sdist) and build
@@ -384,7 +385,7 @@ def render_pep440_old(pieces):
 
     The ".dev0" means dirty.
 
-    Exceptions:
+    Eexceptions:
     1: no tags. 0.postDISTANCE[.dev0]
     """
     if pieces["closest-tag"]:

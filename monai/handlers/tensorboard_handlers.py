@@ -25,7 +25,7 @@ class TensorBoardStatsHandler(object):
     TensorBoardStatsHandler defines a set of Ignite Event-handlers for all the TensorBoard logics.
     It can be used for any Ignite Engine(trainer, validator and evaluator).
     And it can support both epoch level and iteration level with pre-defined TensorBoard event writer.
-    The expected data source is Ignite ``engine.state.output`` and ``engine.state.metrics``.
+    The expected data source is ignite ``engine.state.output`` and ``engine.state.metrics``.
 
     Default behaviors:
         - When EPOCH_COMPLETED, write each dictionary item in

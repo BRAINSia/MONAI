@@ -16,7 +16,7 @@ from monai.utils import ensure_tuple
 
 class LrScheduleHandler:
     """
-    Ignite handler to update the Learning Rate based on PyTorch LR scheduler.
+    ignite handler to update the Learning Rate based on PyTorch LR scheduler.
     """
 
     def __init__(self, lr_scheduler, print_lr=True, name=None, epoch_level=True, step_transform=lambda engine: ()):

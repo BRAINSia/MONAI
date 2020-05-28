@@ -58,7 +58,7 @@ def main():
     def prepare_batch(batch, device=None, non_blocking=False):
         return _prepare_batch((batch[0], batch[1]), device, non_blocking)
 
-    # Ignite evaluator expects batch=(img, label) and returns output=(y_pred, y) at every iteration,
+    # ignite evaluator expects batch=(img, label) and returns output=(y_pred, y) at every iteration,
     # user can add output_transform to return other values
     evaluator = create_supervised_evaluator(net, val_metrics, device, True, prepare_batch=prepare_batch)
 
@@ -84,7 +84,6 @@ def main():
     val_loader = DataLoader(val_ds, batch_size=2, num_workers=4, pin_memory=torch.cuda.is_available())
 
     state = evaluator.run(val_loader)
-    print(state)
 
 
 if __name__ == "__main__":

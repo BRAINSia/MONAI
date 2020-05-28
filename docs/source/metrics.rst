@@ -3,12 +3,6 @@
 .. _metrics:
 
 Metrics
-=======
-.. currentmodule:: monai.metrics
-
-`Mean Dice`
------------
-.. autofunction:: compute_meandice
 
 `Area under the ROC curve`
 --------------------------

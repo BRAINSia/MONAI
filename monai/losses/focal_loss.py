@@ -64,7 +64,7 @@ class FocalLoss(_WeightedLoss):
 
         if target.shape[1] != 1:
             raise ValueError(
-                "target must have one channel, and should be a class index in the range [0, C-1] "
+                f"target must have one channel, and should be a class index in the range [0, C-1] "
                 + f"where C is the number of classes inferred from 'input': C={i.shape[1]}."
             )
         # Change the shape of input and target to

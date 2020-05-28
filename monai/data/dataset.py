@@ -23,7 +23,7 @@ import threading
 
 from monai.transforms import Compose, Randomizable
 from monai.transforms.utils import apply_transform
-from monai.utils import process_bar, get_seed
+from monai.utils import process_bar
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -73,14 +73,14 @@ class PersistentDataset(Dataset):
              'extra': 123                 'extra': 456                 'extra': 789
          },                           },                           }]
 
-    For a composite transform like
+    For a composite transform like 
 
         .. code-block:: python
 
         [ LoadNiftid(keys=['image', 'label']),
           Orientationd(keys=['image', 'label'], axcodes='RAS'),
           ScaleIntensityRanged(keys=['image'], a_min=-57, a_max=164, b_min=0.0, b_max=1.0, clip=True),
-          RandCropByPosNegLabeld(keys=['image', 'label'], label_key='label', size=(96, 96, 96),
+          RandCropByPosNegLabeld(keys=['image', 'label'], label_key='label', size=(96, 96, 96), 
                                  pos=1, neg=1, num_samples=4, image_key='image', image_threshold=0),
           ToTensord(keys=['image', 'label'])]
 
@@ -92,8 +92,6 @@ class PersistentDataset(Dataset):
      Subsequent uses of a dataset directly read pre-processed results from `cache_dir`
      followed by applying the random dependant parts of transform processing.
 
-    Subsequent uses of a dataset directly read pre-processed results from `cache_dir`
-    followed by applying the random dependant parts of transform processing.
     """
 
     def __init__(self, data, transform=None, cache_dir=None):
@@ -395,7 +393,6 @@ class ArrayDataset(ZipDataset, Randomizable):
 
         """
         items = [(img_files, img_transform), (seg_files, seg_transform), (labels, label_transform)]
-        self.set_random_state(seed=get_seed())
         super().__init__([Dataset(x[0], x[1]) for x in items if x[0] is not None])
 
     def randomize(self):

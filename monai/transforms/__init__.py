@@ -20,5 +20,3 @@ from .spatial.array import *
 from .spatial.dictionary import *
 from .utility.array import *
 from .utility.dictionary import *
-from .post.array import *
-from .post.dictionary import *
