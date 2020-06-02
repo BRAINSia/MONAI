@@ -581,7 +581,7 @@ class RandRotate(Randomizable, Transform):
         assert len(self.degrees) == 2, "degrees should be a number or pair of numbers."
 
         self._do_transform = False
-        self.angle = None
+        self.angle: Optional[float] = None
 
     def randomize(self) -> None:
         self._do_transform = self.R.random_sample() < self.prob
@@ -596,6 +596,7 @@ class RandRotate(Randomizable, Transform):
         prefilter: Optional[bool] = None,
     ):
         self.randomize()
+        assert self.angle is not None
         if not self._do_transform:
             return img
         rotator = Rotate(
