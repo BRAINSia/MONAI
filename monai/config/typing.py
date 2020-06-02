@@ -11,8 +11,8 @@
 
 # This file contains type information that should be used consistently throughout
 # the entire MONAI package.
-
-from typing import Hashable, Iterable, TypeVar
+from enum import IntEnum
+from typing import Hashable, Iterable, Sequence, TypeVar, Union
 
 # The MonaiDictionaryKeySelection type is used to for defining variables
 # that store a subset of keys to select items from a dictionary.
@@ -26,3 +26,23 @@ MonaiDictionaryKeySelection = TypeVar("MonaiDictionaryKeySelection", Iterable[Ha
 # The indexes must be integers, and if a container of indexes is specified, the
 # container must be iterable.
 MonaiIndexSelection = TypeVar("MonaiIndexSelection", Iterable[int], int)
+
+
+class InterpolationOrder(IntEnum):
+    """
+    A convenience enumeration for the order of a spline interpolation.
+    """
+
+    SPLINE0 = 0
+    NEARESTNEIGHBOR = 0
+    SPLINE1 = 1
+    LINEAR = 1
+    SPLINE2 = 2
+    CUBIC = 2
+    SPLINE3 = 3
+    SPLINE4 = 4
+    SPLINE5 = 5
+
+
+InterpolationOrderType = Union[int, InterpolationOrder]
+InterpolationOrderSequenceType = Union[InterpolationOrder, Sequence[InterpolationOrder]]

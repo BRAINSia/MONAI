@@ -16,6 +16,8 @@ import torch
 from monai.data.nifti_writer import write_nifti
 from .utils import create_file_basename
 
+from monai.config.typing import InterpolationOrder, InterpolationOrderType
+
 
 class NiftiSaver:
     """
@@ -31,7 +33,7 @@ class NiftiSaver:
         output_postfix: str = "seg",
         output_ext: str = ".nii.gz",
         resample: bool = True,
-        interp_order: int = 3,
+        interp_order: InterpolationOrderType = InterpolationOrder.SPLINE3,
         mode: str = "constant",
         cval: Union[int, float] = 0,
         dtype: Optional[np.dtype] = None,

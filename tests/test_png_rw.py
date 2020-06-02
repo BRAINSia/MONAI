@@ -13,7 +13,8 @@ import os
 import tempfile
 import unittest
 
-from monai.data import write_png, InterpolationCode
+from monai.data import write_png
+from monai.config.typing import InterpolationOrder
 from skimage import io, transform
 import numpy as np
 
@@ -45,7 +46,7 @@ class TestPngWrite(unittest.TestCase):
             img = np.random.rand(2, 2, 3)
             write_png(img, image_name, (4, 4), scale=True)
             img_save_val = transform.resize(
-                img, (4, 4), order=InterpolationCode.SPLINE3, mode="constant", cval=0, preserve_range=True
+                img, (4, 4), order=InterpolationOrder.SPLINE3, mode="constant", cval=0, preserve_range=True
             )
             img_save_val = (255 * img_save_val).astype(np.uint8)
             out = io.imread(image_name)
