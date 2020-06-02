@@ -72,7 +72,7 @@ class ShiftIntensityd(MapTransform):
     dictionary-based wrapper of :py:class:`monai.transforms.ShiftIntensity`.
     """
 
-    def __init__(self, keys: MonaiDictionaryKeySelection, offset: Union[int, float]):
+    def __init__(self, keys: MonaiDictionaryKeySelection, offset: Union[int, float]) -> None:
         """
         Args:
             keys (hashable items): keys of the corresponding items to be transformed.
@@ -138,7 +138,7 @@ class ScaleIntensityd(MapTransform):
         minv: Union[int, float] = 0.0,
         maxv: Union[int, float] = 1.0,
         factor: Optional[float] = None,
-    ):
+    ) -> None:
         """
         Args:
             keys (hashable items): keys of the corresponding items to be transformed.
@@ -247,7 +247,7 @@ class ThresholdIntensityd(MapTransform):
         threshold: Union[int, float],
         above: bool = True,
         cval: Union[int, float] = 0,
-    ):
+    ) -> None:
         super().__init__(keys)
         self.filter = ThresholdIntensity(threshold, above, cval)
 
@@ -280,7 +280,7 @@ class ScaleIntensityRanged(MapTransform):
         b_min: Union[int, float],
         b_max: Union[int, float],
         clip: bool = False,
-    ):
+    ) -> None:
         super().__init__(keys)
         self.scaler = ScaleIntensityRange(a_min, a_max, b_min, b_max, clip)
 
@@ -302,7 +302,7 @@ class AdjustContrastd(MapTransform):
         gamma (float): gamma value to adjust the contrast as function.
     """
 
-    def __init__(self, keys: MonaiDictionaryKeySelection, gamma: Union[int, float]):
+    def __init__(self, keys: MonaiDictionaryKeySelection, gamma: Union[int, float]) -> None:
         super().__init__(keys)
         self.adjuster = AdjustContrast(gamma)
 
