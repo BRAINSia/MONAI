@@ -14,6 +14,8 @@ from typing import Union
 import torch
 import numpy as np
 from monai.data.png_writer import write_png
+
+from monai.config.type_definitions import InterpolationOrder, InterpolationOrderType
 from .utils import create_file_basename
 
 
@@ -31,7 +33,7 @@ class PNGSaver:
         output_postfix: str = "seg",
         output_ext: str = ".png",
         resample: bool = True,
-        interp_order: int = 3,
+        interp_order: InterpolationOrderType = InterpolationOrder.SPLINE3,
         mode: str = "constant",
         cval: Union[int, float] = 0,
         scale: bool = False,

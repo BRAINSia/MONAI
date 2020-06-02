@@ -21,7 +21,7 @@ import numpy as np
 import torch
 
 from monai.config.type_definitions import KeysCollection
-from monai.data.utils import InterpolationCode
+from monai.config.type_definitions import InterpolationOrder
 
 from monai.networks.layers.simplelayers import GaussianFilter
 from monai.transforms.compose import MapTransform, Randomizable
@@ -60,8 +60,9 @@ class Spacingd(MapTransform):
         keys: KeysCollection,
         pixdim,
         diagonal: bool = False,
-        interp_order: str = "bilinear",
-        mode: str = "border",
+        interp_order=InterpolationOrder.SPLINE3,
+        mode="nearest",
+        cval=0,
         dtype: Optional[np.dtype] = None,
         meta_key_format: str = "{}.{}",
     ):
@@ -254,7 +255,7 @@ class Resized(MapTransform):
         self,
         keys: KeysCollection,
         spatial_size,
-        interp_order=1,
+        interp_order=InterpolationOrder.LINEAR,
         mode="reflect",
         cval=0,
         clip=True,
@@ -276,7 +277,7 @@ class Resized(MapTransform):
         for idx, key in enumerate(self.keys):
             d[key] = self.resizer(
                 d[key],
-                order=self.interp_order[idx],
+                interp_order=self.interp_order[idx],
                 mode=self.mode[idx],
                 cval=self.cval[idx],
                 clip=self.clip[idx],
@@ -619,7 +620,7 @@ class Rotated(MapTransform):
         angle: float,
         spatial_axes=(0, 1),
         reshape: bool = True,
-        interp_order=InterpolationCode.LINEAR,
+        interp_order=InterpolationOrder.LINEAR,
         mode="constant",
         cval=0,
         prefilter=True,
@@ -637,7 +638,7 @@ class Rotated(MapTransform):
         for idx, key in enumerate(self.keys):
             d[key] = self.rotator(
                 d[key],
-                order=self.interp_order[idx],
+                interp_order=self.interp_order[idx],
                 mode=self.mode[idx],
                 cval=self.cval[idx],
                 prefilter=self.prefilter[idx],
@@ -673,7 +674,7 @@ class RandRotated(Randomizable, MapTransform):
         prob: float = 0.1,
         spatial_axes=(0, 1),
         reshape: bool = True,
-        interp_order=InterpolationCode.LINEAR,
+        interp_order=InterpolationOrder.LINEAR,
         mode="constant",
         cval=0,
         prefilter=True,
@@ -709,7 +710,7 @@ class RandRotated(Randomizable, MapTransform):
         for idx, key in enumerate(self.keys):
             d[key] = rotator(
                 d[key],
-                order=self.interp_order[idx],
+                interp_order=self.interp_order[idx],
                 mode=self.mode[idx],
                 cval=self.cval[idx],
                 prefilter=self.prefilter[idx],
@@ -737,7 +738,7 @@ class Zoomd(MapTransform):
         self,
         keys: KeysCollection,
         zoom,
-        interp_order=InterpolationCode.SPLINE3,
+        interp_order=InterpolationOrder.SPLINE3,
         mode="constant",
         cval=0,
         prefilter=True,
@@ -757,7 +758,7 @@ class Zoomd(MapTransform):
         for idx, key in enumerate(self.keys):
             d[key] = self.zoomer(
                 d[key],
-                order=self.interp_order[idx],
+                interp_order=self.interp_order[idx],
                 mode=self.mode[idx],
                 cval=self.cval[idx],
                 prefilter=self.prefilter[idx],
@@ -793,7 +794,7 @@ class RandZoomd(Randomizable, MapTransform):
         prob: float = 0.1,
         min_zoom=0.9,
         max_zoom=1.1,
-        interp_order=InterpolationCode.SPLINE3,
+        interp_order=InterpolationOrder.SPLINE3,
         mode="constant",
         cval=0,
         prefilter=True,
@@ -833,7 +834,7 @@ class RandZoomd(Randomizable, MapTransform):
         for idx, key in enumerate(self.keys):
             d[key] = zoomer(
                 d[key],
-                order=self.interp_order[idx],
+                interp_order=self.interp_order[idx],
                 mode=self.mode[idx],
                 cval=self.cval[idx],
                 prefilter=self.prefilter[idx],

@@ -11,13 +11,14 @@
 
 import numpy as np
 from skimage import io, transform
+from monai.config.type_definitions import InterpolationOrder, InterpolationOrderType
 
 
 def write_png(
     data,
     file_name,
     output_shape=None,
-    interp_order=3,
+    interp_order: InterpolationOrderType = InterpolationOrder.SPLINE3,
     mode="constant",
     cval=0,
     scale=False,

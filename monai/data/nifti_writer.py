@@ -13,7 +13,8 @@ import nibabel as nib
 import numpy as np
 import scipy.ndimage
 
-from monai.data.utils import compute_shape_offset, to_affine_nd, InterpolationCode
+from monai.data.utils import compute_shape_offset, to_affine_nd
+from monai.config.type_definitions import InterpolationOrder, InterpolationOrderType
 
 
 def write_nifti(
@@ -23,7 +24,7 @@ def write_nifti(
     target_affine=None,
     resample=True,
     output_shape=None,
-    interp_order=InterpolationCode.SPLINE3,
+    interp_order: InterpolationOrderType = InterpolationOrder.SPLINE3,
     mode="constant",
     cval=0,
     dtype=None,
