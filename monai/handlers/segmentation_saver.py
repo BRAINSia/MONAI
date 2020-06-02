@@ -66,6 +66,7 @@ class SegmentationSaver:
             name: identifier of logging.logger to use, defaulting to `engine.logger`.
 
         """
+        self.saver: Union[NiftiSaver, PNGSaver]
         if output_ext in (".nii.gz", ".nii"):
             self.saver = NiftiSaver(output_dir, output_postfix, output_ext, resample, interp_order, mode, cval, dtype)
         elif output_ext == ".png":
