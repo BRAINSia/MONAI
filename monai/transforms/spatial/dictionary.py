@@ -15,7 +15,7 @@ defined in :py:class:`monai.transforms.spatial.array`.
 Class names are ended with 'd' to denote dictionary-based transforms.
 """
 
-from typing import Hashable, Optional, Tuple
+from typing import Hashable, Optional, Tuple, Iterable
 
 import numpy as np
 import torch
@@ -99,14 +99,16 @@ class Spacingd(MapTransform):
         self.dtype = ensure_tuple_rep(dtype, len(self.keys))
         self.meta_key_format = meta_key_format
 
-    def __call__(self, data):
+    def __call__(
+        self, data: Iterable,
+    ):
         d = dict(data)
         for idx, key in enumerate(self.keys):
             affine_key = self.meta_key_format.format(key, "affine")
             # resample array of each corresponding key
             # using affine fetched from d[affine_key]
             d[key], _, new_affine = self.spacing_transform(
-                data_array=d[key],
+                data=d[key],
                 affine=d[affine_key],
                 interp_order=self.interp_order[idx],
                 mode=self.mode[idx],
@@ -316,7 +318,7 @@ class RandAffined(Randomizable, MapTransform):
                 if ``data`` component has three spatial dimensions, ``spatial_size`` should have 3 elements [h, w, d].
             prob: probability of returning a randomized affine grid.
                 defaults to 0.1, with 10% chance returns a randomized grid.
-            mode (str or sequence of str): interpolation order.
+            mode (str or sequence of str): interpolation mode.
                 Available options are 'nearest', 'bilinear'. Defaults to ``'bilinear'``.
                 if mode is a tuple of interpolation mode strings, each string corresponds to a key in ``keys``.
                 this is useful to set different modes for different data items.
@@ -398,7 +400,7 @@ class Rand2DElasticd(Randomizable, MapTransform):
             prob: probability of returning a randomized affine grid.
                 defaults to 0.1, with 10% chance returns a randomized grid,
                 otherwise returns a ``spatial_size`` centered area extracted from the input image.
-            mode (str or sequence of str): interpolation order.
+            mode (str or sequence of str): interpolation mode.
                 Available options are 'nearest', 'bilinear'. Defaults to ``'bilinear'``.
                 if mode is a tuple of interpolation mode strings, each string corresponds to a key in ``keys``.
                 this is useful to set different modes for different data items.
@@ -486,7 +488,7 @@ class Rand3DElasticd(Randomizable, MapTransform):
             prob: probability of returning a randomized affine grid.
                 defaults to 0.1, with 10% chance returns a randomized grid,
                 otherwise returns a ``spatial_size`` centered area extracted from the input image.
-            mode (str or sequence of str): interpolation order.
+            mode (str or sequence of str): interpolation mode.
                 Available options are 'nearest', 'bilinear'. Defaults to ``'bilinear'``.
                 if mode is a tuple of interpolation mode strings, each string corresponds to a key in ``keys``.
                 this is useful to set different modes for different data items.

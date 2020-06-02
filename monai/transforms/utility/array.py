@@ -14,14 +14,16 @@ https://github.com/Project-MONAI/MONAI/wiki/MONAI_Design
 """
 
 import time
+from collections import OrderedDict
 
-from typing import Callable, Optional
+from typing import Callable, Optional, Iterable, Dict, Any
 import logging
 import numpy as np
 import torch
 
 from monai.transforms.compose import Transform
 from monai.utils.misc import MONAINumpyDataType
+from monai.utils import validate_kwargs
 
 
 class AsChannelFirst(Transform):
@@ -119,9 +121,11 @@ class CastToType(Transform):
         """
         self.dtype = dtype
 
-    def __call__(self, img: np.ndarray):
-        assert isinstance(img, np.ndarray), "image must be numpy array."
-        return img.astype(self.dtype)
+    def __call__(self, data: Iterable, *args, **kwargs):
+        assert len(args) == 0, f"Incorrect positional arguments provided {args}"
+        assert len(kwargs) == 0, f"Invalid named named arguments {kwargs}"
+        assert isinstance(data, np.ndarray), "image must be numpy array."
+        return data.astype(self.dtype)
 
 
 class ToTensor(Transform):
@@ -129,10 +133,14 @@ class ToTensor(Transform):
     Converts the input image to a tensor without applying any other transformations.
     """
 
-    def __call__(self, img):
-        if torch.is_tensor(img):
-            return img.contiguous()
-        return torch.as_tensor(np.ascontiguousarray(img))
+    def __call__(self, data: Iterable, *args, **kwargs):
+        assert len(args) == 0, f"Incorrect positional arguments provided {args}"
+        assert len(kwargs) == 0, f"Invalid named named arguments {kwargs}"
+        if torch.is_tensor(data):
+            assert isinstance(data, torch.Tensor)
+            return data.contiguous()
+        assert isinstance(data, np.ndarray)
+        return torch.as_tensor(np.ascontiguousarray(data))
 
 
 class Transpose(Transform):
@@ -143,8 +151,11 @@ class Transpose(Transform):
     def __init__(self, indices) -> None:
         self.indices = indices
 
-    def __call__(self, img):
-        return img.transpose(self.indices)
+    def __call__(self, data: Iterable, *args, **kwargs):
+        assert len(args) == 0, f"Incorrect positional arguments provided {args}"
+        assert len(kwargs) == 0, f"Invalid named named arguments {kwargs}"
+        assert isinstance(data, np.ndarray)
+        return data.transpose(self.indices)
 
 
 class SqueezeDim(Transform):
@@ -162,12 +173,15 @@ class SqueezeDim(Transform):
             assert isinstance(dim, int) and dim >= -1, "invalid channel dimension."
         self.dim = dim
 
-    def __call__(self, img: np.ndarray):
+    def __call__(self, data: Iterable, *args, **kwargs):
         """
         Args:
-            img (ndarray): numpy arrays with required dimension `dim` removed
+            data: numpy arrays with required dimension `dim` removed
         """
-        return np.squeeze(img, self.dim)
+        assert len(args) == 0, f"Incorrect positional arguments provided {args}"
+        assert len(kwargs) == 0, f"Invalid named named arguments {kwargs}"
+        assert isinstance(data, np.ndarray)
+        return np.squeeze(data, self.dim)
 
 
 class DataStats(Transform):
@@ -210,31 +224,42 @@ class DataStats(Transform):
         if logger_handler is not None:
             self._logger.addHandler(logger_handler)
 
-    def __call__(
-        self,
-        img,
-        prefix: Optional[str] = None,
-        data_shape: Optional[bool] = None,
-        intensity_range: Optional[bool] = None,
-        data_value: Optional[bool] = None,
-        additional_info=None,
-    ):
+    def __call__(self, data: Iterable, *args, **kwargs):
+        """
+        Args:
+            data: numpy arrays with required dimension `dim` removed
+            prefix (Optional[str]):
+            data_shape: Optional[bool] = None,
+            intensity_range: Optional[bool] = None,
+            data_value: Optional[bool] = None,
+            additional_info: Optional[Callable] =None,
+        """
+        reference_args: OrderedDict = OrderedDict(
+            {"prefix": None, "data_shape": None, "intensity_range": None, "data_value": None, "additional_info": None}
+        )
+        produced_args: Dict[str, Any] = validate_kwargs(args, kwargs, reference_args)
+
+        prefix: Optional[str] = produced_args["prefix"]
+        data_shape: Optional[bool] = produced_args["data_shape"]
+        intensity_range: Optional[bool] = produced_args["intensity_range"]
+        data_value: Optional[bool] = produced_args["data_value"]
+        additional_info: Optional[Callable] = produced_args["additional_info"]
+
         lines = [f"{prefix or self.prefix} statistics:"]
 
         if self.data_shape if data_shape is None else data_shape:
-            lines.append(f"Shape: {img.shape}")
+            lines.append(f"Shape: {data.shape}")
         if self.intensity_range if intensity_range is None else intensity_range:
-            lines.append(f"Intensity range: ({np.min(img)}, {np.max(img)})")
+            lines.append(f"Intensity range: ({np.min(data)}, {np.max(data)})")
         if self.data_value if data_value is None else data_value:
-            lines.append(f"Value: {img}")
+            lines.append(f"Value: {data}")
         additional_info = self.additional_info if additional_info is None else additional_info
         if additional_info is not None:
-            lines.append(f"Additional info: {additional_info(img)}")
+            lines.append(f"Additional info: {additional_info(data)}")
         separator = "\n"
         self.output = f"{separator.join(lines)}"
         self._logger.debug(self.output)
-
-        return img
+        return data
 
 
 class SimulateDelay(Transform):

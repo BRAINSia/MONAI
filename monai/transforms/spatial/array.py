@@ -12,8 +12,8 @@
 A collection of "vanilla" transforms for spatial operations
 https://github.com/Project-MONAI/MONAI/wiki/MONAI_Design
 """
-
-from typing import Optional, Union, List
+from collections import OrderedDict
+from typing import Optional, Union, List, Iterable, Dict, Any
 
 import warnings
 import numpy as np
@@ -24,7 +24,7 @@ from skimage.transform import resize
 
 from monai.data.utils import zoom_affine, compute_shape_offset, to_affine_nd, InterpolationCode, InterpolationCodeType
 from monai.networks.layers.simplelayers import GaussianFilter
-from monai.transforms.compose import Transform, Randomizable, TransformDataType
+from monai.transforms.compose import Transform, Randomizable
 from monai.transforms.utils import (
     create_control_grid,
     create_grid,
@@ -33,7 +33,7 @@ from monai.transforms.utils import (
     create_shear,
     create_translate,
 )
-from monai.utils.misc import ensure_tuple, MONAINumpyDataType
+from monai.utils.misc import ensure_tuple, validate_kwargs, MONAINumpyDataType
 from typing import Sequence, Tuple
 
 
@@ -82,23 +82,31 @@ class Spacing(Transform):
         self.cval: float = cval
         self.dtype: MONAINumpyDataType = dtype
 
-    def __call__(
-        self,
-        data_array: np.ndarray,
-        affine: Optional[np.matrix] = None,
-        interp_order: Optional[InterpolationCodeType] = None,
-        mode: Optional[str] = None,
-        cval: Optional[float] = None,
-        dtype: Optional[MONAINumpyDataType] = None,
-    ):
+    def __call__(self, data: Iterable, *args, **kwargs):
         """
         Args:
-            data_array: in shape (num_channels, H[, W, ...]).
-            affine: (N+1)x(N+1) original affine matrix for spatially ND `data_array`. Defaults to identity.
+            data: in shape (num_channels, H[, W, ...]). Only np.ndarray's are valid.
+            affine Optional[np.matrix]: (N+1)x(N+1) original affine matrix for spatially ND `data_array`. Defaults to identity.
+            interp_order: Optional[InterpolationCodeType] = None
+            mode: Optional[str] = None
+            cval: Union[int, float] = None
+            dtype: Optional[MONAINumpyDataType] = None
         Returns:
             data_array (resampled into `self.pixdim`), original pixdim, current pixdim.
         """
-        sr = data_array.ndim - 1
+        reference_args: OrderedDict = OrderedDict(
+            {"affine": None, "interp_order": None, "mode": None, "cval": None, "dtype": None}
+        )
+        produced_args: Dict[str, Any] = validate_kwargs(args, kwargs, reference_args)
+        affine = produced_args["affine"]
+        interp_order = produced_args["interp_order"]
+        mode: Optional[str] = produced_args["mode"]
+        cval: Union[int, float] = produced_args["cval"]
+        dtype: Optional[np.dtype] = produced_args["dtype"]
+
+        assert isinstance(data, np.ndarray)
+
+        sr = data.ndim - 1
         if sr <= 0:
             raise ValueError("the array should have at least one spatial dimension.")
         if affine is None:
@@ -114,15 +122,15 @@ class Spacing(Transform):
             raise ValueError(f"pixdim must be positive, got {out_d}")
         # compute output affine, shape and offset
         new_affine = zoom_affine(affine_, out_d, diagonal=self.diagonal)
-        output_shape, offset = compute_shape_offset(data_array.shape[1:], affine_, new_affine)
+        output_shape, offset = compute_shape_offset(data.shape[1:], affine_, new_affine)
         new_affine[:sr, -1] = offset[:sr]
         transform = np.linalg.inv(affine_) @ new_affine
         # adapt to the actual rank
         transform_ = to_affine_nd(sr, transform)
         # resample
-        _dtype = dtype or self.dtype or data_array.dtype
+        _dtype = dtype or self.dtype or data.dtype
         output_data = []
-        for data in data_array:
+        for data in data:
             data_ = scipy.ndimage.affine_transform(
                 data.astype(_dtype),
                 matrix=transform_,
@@ -170,17 +178,23 @@ class Orientation(Transform):
         self.as_closest_canonical = as_closest_canonical
         self.labels = labels
 
-    def __call__(self, data_array: TransformDataType, affine: Optional[np.matrix] = None) -> TransformDataType:
+    def __call__(self, data: Iterable, *args, **kwargs):
         """
         original orientation of `data_array` is defined by `affine`.
 
         Args:
-            data_array: in shape (num_channels, H[, W, ...]).
-            affine: (N+1)x(N+1) original affine matrix for spatially ND `data_array`. Defaults to identity.
+           data: in shape (num_channels, H[, W, ...]). Only np.ndarray's are valid.
+           affine (matrix): (N+1)x(N+1) original affine matrix for spatially ND `data_array`. Defaults to identity.
         Returns:
             data_array (reoriented in `self.axcodes`), original axcodes, current axcodes.
         """
-        sr = data_array.ndim - 1
+        reference_args: OrderedDict = OrderedDict({"affine": None})
+        produced_args: Dict[str, Any] = validate_kwargs(args, kwargs, reference_args)
+        affine = produced_args["affine"]
+
+        assert isinstance(data, np.ndarray)
+
+        sr = data.ndim - 1
         if sr <= 0:
             raise ValueError("the array should have at least one spatial dimension.")
         if affine is None:
@@ -209,11 +223,11 @@ class Orientation(Transform):
         ornt = spatial_ornt.copy()
         ornt[:, 0] += 1  # skip channel dim
         ornt = np.concatenate([np.array([[0, 1]]), ornt])
-        shape = data_array.shape[1:]
-        data_array = nib.orientations.apply_orientation(data_array, ornt)
+        shape = data.shape[1:]
+        data = nib.orientations.apply_orientation(data, ornt)
         new_affine = affine_ @ nib.orientations.inv_ornt_aff(spatial_ornt, shape)
         new_affine = to_affine_nd(affine, new_affine)
-        return data_array, affine, new_affine
+        return data, affine, new_affine
 
 
 class Flip(Transform):
@@ -228,15 +242,18 @@ class Flip(Transform):
     def __init__(self, spatial_axis: Optional[Union[int, Tuple[int, int], Tuple[int, int, int]]] = None) -> None:
         self.spatial_axis = spatial_axis
 
-    def __call__(self, img: TransformDataType, *args, **kwargs) -> TransformDataType:
+    def __call__(self, data: Iterable, *args, **kwargs):
         """
         Args:
-            img: channel first array, must have shape: (num_channels, H[, W, ..., ]),
+            data: channel first array, must have shape: (num_channels, H[, W, ..., ]),
         """
+        assert len(args) == 0, f"Incorrect positional arguments provided {args}"
+        assert len(kwargs) == 0, f"Invalid named named arguments {kwargs}"
+        assert isinstance(data, np.ndarray)
         flipped = list()
-        for channel in img:
+        for channel in data:
             flipped.append(np.flip(channel, self.spatial_axis))
-        return np.stack(flipped).astype(img.dtype)
+        return np.stack(flipped).astype(data.dtype)
 
 
 class Resize(Transform):
@@ -276,22 +293,39 @@ class Resize(Transform):
         self.preserve_range = preserve_range
         self.anti_aliasing = anti_aliasing
 
-    def __call__(
-        self,
-        img,
-        interp_order: Optional[InterpolationCodeType] = None,
-        mode: Optional[str] = None,
-        cval: Optional[float] = None,
-        clip: Optional[bool] = None,
-        preserve_range: Optional[bool] = None,
-        anti_aliasing: Optional[bool] = None,
-    ):
+    def __call__(self, data: Iterable, *args, **kwargs):
         """
         Args:
-            img (ndarray): channel first array, must have shape: (num_channels, H[, W, ..., ]),
+            data: channel first array, must have shape: (num_channels, H[, W, ..., ]), must be np.ndarray
+            interp_order: Optional[InterpolationCodeType]=None,
+            mode: Optional[str] = None,
+            cval: Optional[Union[int, float]] = None,
+            clip: Optional[bool] = None,
+            preserve_range: Optional[bool] = None,
+            anti_aliasing: Optional[bool] = None,
         """
+        reference_args: OrderedDict = OrderedDict(
+            {
+                "interp_order": None,
+                "mode": None,
+                "cval": None,
+                "clip": None,
+                "preserve_range": None,
+                "anti_aliasing": None,
+            }
+        )
+        produced_args: Dict[str, Any] = validate_kwargs(args, kwargs, reference_args)
+
+        interp_order: Optional[InterpolationCode] = produced_args["interp_order"]
+        mode: Optional[str] = produced_args["mode"]
+        cval: Optional[Union[int, float]] = produced_args["cval"]
+        clip: Optional[bool] = produced_args["clip"]
+        preserve_range: Optional[bool] = produced_args["preserve_range"]
+        anti_aliasing: Optional[bool] = produced_args["anti_aliasing"]
+
+        assert isinstance(data, np.ndarray)
         resized = list()
-        for channel in img:
+        for channel in data:
             resized.append(
                 resize(
                     image=channel,
@@ -304,7 +338,7 @@ class Resize(Transform):
                     anti_aliasing=self.anti_aliasing if anti_aliasing is None else anti_aliasing,
                 )
             )
-        return np.stack(resized).astype(img.dtype)
+        return np.stack(resized).astype(data.dtype)
 
 
 class Rotate(Transform):
@@ -344,20 +378,27 @@ class Rotate(Transform):
         self.cval = cval
         self.prefilter = prefilter
 
-    def __call__(
-        self,
-        img,
-        interp_order: Optional[InterpolationCodeType] = None,
-        mode: Optional[str] = None,
-        cval: Optional[float] = None,
-        prefilter: Optional[bool] = None,
-    ):
+    def __call__(self, data: Iterable, *args, **kwargs):
         """
         Args:
-            img (ndarray): channel first array, must have shape: (num_channels, H[, W, ..., ]),
+            data: channel first array, must have shape: (num_channels, H[, W, ..., ]), must be np.ndarray
+            interp_order: Optional[InterpolationCode] = None,
+            mode: Optional[str] = None,
+            cval: Optional[Union[int, float]] = None,
+            prefilter: Optional[bool] = None,
         """
+
+        reference_args: OrderedDict = OrderedDict({"interp_order": None, "mode": None, "cval": None, "prefilter": None})
+        produced_args: Dict[str, Any] = validate_kwargs(args, kwargs, reference_args)
+
+        interp_order: Optional[InterpolationCode] = produced_args["interp_order"]
+        mode: Optional[str] = produced_args["mode"]
+        cval: Optional[Union[int, float]] = produced_args["cval"]
+        prefilter: Optional[bool] = produced_args["prefilter"]
+
+        assert isinstance(data, np.ndarray)
         rotated = list()
-        for channel in img:
+        for channel in data:
             rotated.append(
                 scipy.ndimage.rotate(
                     input=channel,
@@ -370,7 +411,7 @@ class Rotate(Transform):
                     prefilter=self.prefilter if prefilter is None else prefilter,
                 )
             )
-        return np.stack(rotated).astype(img.dtype)
+        return np.stack(rotated).astype(data.dtype)
 
 
 class Zoom(Transform):
@@ -381,7 +422,7 @@ class Zoom(Transform):
         zoom (float or sequence): The zoom factor along the spatial axes.
             If a float, zoom is the same for each spatial axis.
             If a sequence, zoom should contain one value for each spatial axis.
-        interp_order: order of interpolation. Default=InterpolationCode.SPLINE3.
+        interp_order: interpolation order of interpolation. Default=InterpolationCode.SPLINE3.
         mode: Determines how input is extended beyond boundaries. Default is 'constant'.
         cval: Value to fill past edges. Default is 0.
         prefilter: Apply spline_filter before interpolation. Default: True.
@@ -491,15 +532,18 @@ class Rotate90(Transform):
         self.k = k
         self.spatial_axes = spatial_axes
 
-    def __call__(self, img: np.ndarray):
+    def __call__(self, data: Iterable, *args, **kwargs):
         """
         Args:
-            img (ndarray): channel first array, must have shape: (num_channels, H[, W, ..., ]),
+            data: channel first array, must have shape: (num_channels, H[, W, ..., ]), Only np.ndarray alowed
         """
+        assert len(args) == 0, f"Incorrect positional arguments provided {args}"
+        assert len(kwargs) == 0, f"Invalid named named arguments {kwargs}"
+        assert isinstance(data, np.ndarray)
         rotated = list()
-        for channel in img:
+        for channel in data:
             rotated.append(np.rot90(channel, self.k, self.spatial_axes))
-        return np.stack(rotated).astype(img.dtype)
+        return np.stack(rotated).astype(data.dtype)
 
 
 class RandRotate90(Randomizable, Transform):
@@ -589,7 +633,7 @@ class RandRotate(Randomizable, Transform):
 
     def __call__(
         self,
-        img,
+        data,
         interp_order: Optional[InterpolationCodeType] = None,
         mode: Optional[str] = None,
         cval: Optional[float] = None,
@@ -598,7 +642,7 @@ class RandRotate(Randomizable, Transform):
         self.randomize()
         assert self.angle is not None
         if not self._do_transform:
-            return img
+            return data
         rotator = Rotate(
             angle=self.angle,
             spatial_axes=self.spatial_axes,
@@ -608,7 +652,7 @@ class RandRotate(Randomizable, Transform):
             cval=self.cval if cval is None else cval,
             prefilter=self.prefilter if prefilter is None else prefilter,
         )
-        return rotator(img)
+        return rotator(data)
 
 
 class RandFlip(Randomizable, Transform):
@@ -904,7 +948,7 @@ class Resample(Transform):
         Args:
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices. Defaults to 'zeros'.
             as_tensor_output: whether to return a torch tensor. Defaults to False.
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to 'bilinear'.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to 'bilinear'.
             device (torch.device): device on which the tensor will be allocated.
         """
         self.padding_mode = padding_mode
@@ -923,7 +967,7 @@ class Resample(Transform):
         Args:
             img (ndarray or tensor): shape must be (num_channels, H, W[, D]).
             grid (ndarray or tensor): shape must be (3, H, W) for 2D or (4, H, W, D) for 3D.
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to 'bilinear'.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to 'bilinear'.
         """
         if not torch.is_tensor(img):
             img = torch.as_tensor(np.ascontiguousarray(img))
@@ -983,7 +1027,7 @@ class Affine(Transform):
             spatial_size (list or tuple of int): output image spatial size.
                 if `img` has two spatial dimensions, `spatial_size` should have 2 elements [h, w].
                 if `img` has three spatial dimensions, `spatial_size` should have 3 elements [h, w, d].
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to 'bilinear'.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to 'bilinear'.
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices. Defaults to 'zeros'.
             as_tensor_output: the computation is implemented using pytorch tensors, this option specifies
                 whether to convert it back to numpy arrays.
@@ -1016,7 +1060,7 @@ class Affine(Transform):
                 if `img` has two spatial dimensions, `spatial_size` should have 2 elements [h, w].
                 if `img` has three spatial dimensions, `spatial_size` should have 3 elements [h, w, d].
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices. Defaults to 'zeros'.
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to 'bilinear'.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to 'bilinear'.
         """
         grid = self.affine_grid(spatial_size=spatial_size or self.spatial_size)
         return self.resampler(
@@ -1049,7 +1093,7 @@ class RandAffine(Randomizable, Transform):
             spatial_size (list or tuple of int): output image spatial size.
                 if `img` has two spatial dimensions, `spatial_size` should have 2 elements [h, w].
                 if `img` has three spatial dimensions, `spatial_size` should have 3 elements [h, w, d].
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to 'bilinear'.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to 'bilinear'.
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices. Defaults to 'zeros'.
             as_tensor_output: the computation is implemented using pytorch tensors, this option specifies
                 whether to convert it back to numpy arrays.
@@ -1100,7 +1144,7 @@ class RandAffine(Randomizable, Transform):
                 if `img` has two spatial dimensions, `spatial_size` should have 2 elements [h, w].
                 if `img` has three spatial dimensions, `spatial_size` should have 3 elements [h, w, d].
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices. Defaults to 'zeros'.
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to 'bilinear'.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to 'bilinear'.
         """
         self.randomize()
         _spatial_size = spatial_size or self.spatial_size
@@ -1142,7 +1186,7 @@ class Rand2DElastic(Randomizable, Transform):
                 defaults to 0.1, with 10% chance returns a randomized grid,
                 otherwise returns a ``spatial_size`` centered area extracted from the input image.
             spatial_size (2 ints): specifying output image spatial size [h, w].
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to ``'bilinear'``.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to ``'bilinear'``.
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices.
                 Defaults to ``'zeros'``.
             as_tensor_output: the computation is implemented using pytorch tensors, this option specifies
@@ -1196,7 +1240,7 @@ class Rand2DElastic(Randomizable, Transform):
             spatial_size (2 ints): specifying output image spatial size [h, w].
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices.
                 Defaults to ``'zeros'``.
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to ``self.mode``.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to ``self.mode``.
         """
         spatial_size = spatial_size or self.spatial_size
         self.randomize(spatial_size)
@@ -1239,7 +1283,7 @@ class Rand3DElastic(Randomizable, Transform):
                 defaults to 0.1, with 10% chance returns a randomized grid,
                 otherwise returns a ``spatial_size`` centered area extracted from the input image.
             spatial_size (3 ints): specifying output image spatial size [h, w, d].
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to ``'bilinear'``.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to ``'bilinear'``.
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices.
                 Defaults to ``'zeros'``.
             as_tensor_output: the computation is implemented using pytorch tensors, this option specifies
@@ -1288,7 +1332,7 @@ class Rand3DElastic(Randomizable, Transform):
             spatial_size (3 ints): specifying spatial 3D output image spatial size [h, w, d].
             padding_mode ('zeros'|'border'|'reflection'): mode of handling out of range indices.
                 Defaults to ``'zeros'``.
-            mode ('nearest'|'bilinear'): interpolation order. Defaults to 'self.mode'.
+            mode ('nearest'|'bilinear'): interpolation mode. Defaults to 'self.mode'.
         """
         spatial_size = spatial_size or self.spatial_size
         self.randomize(spatial_size)
