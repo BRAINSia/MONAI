@@ -99,9 +99,9 @@ class Spacingd(MapTransform):
         self.dtype = ensure_tuple_rep(dtype, len(self.keys))
         self.meta_key_format = meta_key_format
 
-    def __call__(
-        self, data: Iterable,
-    ):
+    def __call__(self, data: Iterable, *args, **kwargs):
+        assert len(args) == 0, f"Incorrect positional arguments provided {args}"
+        assert len(kwargs) == 0, f"Invalid named named arguments {kwargs}"
         d = dict(data)
         for idx, key in enumerate(self.keys):
             affine_key = self.meta_key_format.format(key, "affine")
@@ -219,7 +219,9 @@ class RandRotate90d(Randomizable, MapTransform):
         self._do_transform = False
         self._rand_k = 0
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._rand_k = self.R.randint(self.max_k) + 1
         self._do_transform = self.R.random() < self.prob
 
@@ -351,7 +353,9 @@ class RandAffined(Randomizable, MapTransform):
         super().set_random_state(seed, state)
         return self
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self.rand_affine.randomize()
 
     def __call__(self, data):
@@ -586,7 +590,9 @@ class RandFlipd(Randomizable, MapTransform):
         self._do_transform = False
         self.flipper = Flip(spatial_axis=spatial_axis)
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._do_transform = self.R.random_sample() < self.prob
 
     def __call__(self, data):
@@ -701,7 +707,9 @@ class RandRotated(Randomizable, MapTransform):
         self._do_transform = False
         self.angle = None
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._do_transform = self.R.random_sample() < self.prob
         self.angle = self.R.uniform(low=self.degrees[0], high=self.degrees[1])
 
@@ -822,7 +830,9 @@ class RandZoomd(Randomizable, MapTransform):
         self._do_transform = False
         self._zoom = None
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._do_transform = self.R.random_sample() < self.prob
         if hasattr(self.min_zoom, "__iter__"):
             # TODO: Review the types here

@@ -108,7 +108,9 @@ class RandShiftIntensityd(Randomizable, MapTransform):
         self.prob = prob
         self._do_transform = False
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._offset = self.R.uniform(low=self.offsets[0], high=self.offsets[1])
         self._do_transform = self.R.random() < self.prob
 
@@ -172,7 +174,9 @@ class RandScaleIntensityd(Randomizable, MapTransform):
         self.prob = prob
         self._do_transform = False
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self.factor = self.R.uniform(low=self.factors[0], high=self.factors[1])
         self._do_transform = self.R.random() < self.prob
 
@@ -329,7 +333,9 @@ class RandAdjustContrastd(Randomizable, MapTransform):
         self._do_transform = False
         self.gamma_value = None
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._do_transform = self.R.random_sample() < self.prob
         self.gamma_value = self.R.uniform(low=self.gamma[0], high=self.gamma[1])
 

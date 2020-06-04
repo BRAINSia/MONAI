@@ -245,6 +245,7 @@ class DataStats(Transform):
         data_value: Optional[bool] = produced_args["data_value"]
         additional_info: Optional[Callable] = produced_args["additional_info"]
 
+        assert isinstance(data, np.ndarray)
         lines = [f"{prefix or self.prefix} statistics:"]
 
         if self.data_shape if data_shape is None else data_shape:

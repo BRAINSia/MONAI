@@ -68,7 +68,9 @@ class NiftiDataset(Dataset, Randomizable):
     def __len__(self) -> int:
         return len(self.image_files)
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._seed = self.R.randint(np.iinfo(np.int32).max)
 
     def __getitem__(self, index: int):

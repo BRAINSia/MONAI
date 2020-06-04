@@ -13,12 +13,11 @@ A collection of "vanilla" transforms for intensity adjustment
 https://github.com/Project-MONAI/MONAI/wiki/MONAI_Design
 """
 
-
+from typing import Optional, Union, List, Tuple
 import numpy as np
 
 from monai.transforms.compose import Transform, Randomizable
 from monai.transforms.utils import rescale_array
-from typing import Union, List, Tuple, Optional
 
 
 class RandGaussianNoise(Randomizable, Transform):
@@ -78,7 +77,9 @@ class RandShiftIntensity(Randomizable, Transform):
         self.prob: float = prob
         self._do_transform: bool = False
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._offset = self.R.uniform(low=self.offsets[0], high=self.offsets[1])
         self._do_transform = self.R.random() < self.prob
 
@@ -135,7 +136,9 @@ class RandScaleIntensity(Randomizable, Transform):
         self.prob = prob
         self._do_transform = False
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self.factor = self.R.uniform(low=self.factors[0], high=self.factors[1])
         self._do_transform = self.R.random() < self.prob
 
@@ -291,7 +294,9 @@ class RandAdjustContrast(Randomizable, Transform):
         self._do_transform = False
         self.gamma_value = None
 
-    def randomize(self) -> None:
+    def randomize(self, *args, **kwargs) -> None:
+        assert len(args) == 0, f"Extra arguments not allowed {args}."
+        assert len(kwargs) == 0, f"Extra arguments not allowed {kwargs}."
         self._do_transform = self.R.random_sample() < self.prob
         self.gamma_value = self.R.uniform(low=self.gamma[0], high=self.gamma[1])
 
