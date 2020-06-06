@@ -13,7 +13,7 @@ A collection of "vanilla" transforms for spatial operations
 https://github.com/Project-MONAI/MONAI/wiki/MONAI_Design
 """
 
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Any
 
 import warnings
 import numpy as np
@@ -406,7 +406,7 @@ class Zoom(Transform):
         else:
             self._zoom = scipy.ndimage.zoom
 
-    def __call__(
+    def __call__(  # type: ignore # see issue #495
         self,
         img,
         interp_order: Optional[InterpolationOrderType] = None,
@@ -418,7 +418,7 @@ class Zoom(Transform):
         Args:
             img (ndarray): channel first array, must have shape: (num_channels, H[, W, ..., ]),
         """
-        zoomed = list()
+        zoomed_list: List[Any] = list()
         if self.use_gpu:
             import cupy  # type: ignore
 
@@ -431,10 +431,10 @@ class Zoom(Transform):
                     cval=self.cval if cval is None else cval,
                     prefilter=self.prefilter if prefilter is None else prefilter,
                 )
-                zoomed.append(cupy.asnumpy(zoom_channel))
+                zoomed_list.append(cupy.asnumpy(zoom_channel))
         else:
             for channel in img:
-                zoomed.append(
+                zoomed_list.append(
                     self._zoom(
                         channel,
                         zoom=self.zoom,
@@ -444,8 +444,8 @@ class Zoom(Transform):
                         prefilter=self.prefilter if prefilter is None else prefilter,
                     )
                 )
-        zoomed = np.stack(zoomed).astype(img.dtype)
-
+        zoomed: np.ndarray = np.stack(zoomed_list).astype(img.dtype)
+        del zoomed_list
         if not self.keep_size or np.allclose(img.shape, zoomed.shape):
             return zoomed
 
