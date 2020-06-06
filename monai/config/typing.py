@@ -19,3 +19,10 @@ from typing import Hashable, Iterable, TypeVar
 # The keys must be hashable, and if a container of keys is specified, the
 # container must be iterable.
 MonaiDictionaryKeySelection = TypeVar("MonaiDictionaryKeySelection", Iterable[Hashable], Hashable)
+
+
+# The MonaiIndexSelection type is used to for defining variables
+# that store a subset of indexes to select items from a List or Array like objects.
+# The indexes must be integers, and if a container of indexes is specified, the
+# container must be iterable.
+MonaiIndexSelection = TypeVar("MonaiIndexSelection", Iterable[int], int)

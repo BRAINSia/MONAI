@@ -165,7 +165,7 @@ class CropForegroundd(MapTransform):
         keys: MonaiDictionaryKeySelection,
         source_key: str,
         select_fn: Callable = lambda x: x > 0,
-        channel_indexes: Callable = None,
+        channel_indexes: Optional[MonaiIndexSelection] = None,
         margin=0,
     ):
         """
@@ -174,7 +174,7 @@ class CropForegroundd(MapTransform):
                 See also: :py:class:`monai.transforms.compose.MapTransform`
             source_key (str): data source to generate the bounding box of foreground, can be image or label, etc.
             select_fn (Callable): function to select expected foreground, default is to select values > 0.
-            channel_indexes (int, tuple or list): if defined, select foreground only on the specified channels
+            channel_indexes: if defined, select foreground only on the specified channels
                 of image. if None, select foreground on the whole image.
             margin (int): add margin to all dims of the bounding box.
         """
