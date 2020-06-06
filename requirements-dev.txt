@@ -6,6 +6,9 @@ flake8-bugbear
 flake8-comprehensions
 flake8-executable
 flake8-pyi
+flake8-docstrings
+pydocstyle>=4.0.0
+darglint
 pylint
 mccabe
 pep8-naming
