@@ -8,16 +8,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Tuple, Sequence
 
 import numpy as np
 from skimage import io, transform
+
 from monai.config.type_definitions import InterpolationOrder, InterpolationOrderType
+from monai.utils import issequenceiterable
 
 
 def write_png(
     data,
     file_name,
-    output_shape=None,
+    output_shape: Optional[Sequence[int]] = None,
     interp_order: InterpolationOrderType = InterpolationOrder.SPLINE3,
     mode="constant",
     cval=0,
@@ -33,7 +36,7 @@ def write_png(
     Args:
         data (numpy.ndarray): input data to write to file.
         file_name (string): expected file name that saved on disk.
-        output_shape (None or tuple of ints): output image shape.
+        output_shape: output image shape.
         interp_order (int): the order of the spline interpolation, default is InterpolationCode.SPLINE3.
             The order has to be in the range 0 - 5.
             this option is used when `output_shape != None`.
@@ -51,14 +54,14 @@ def write_png(
     assert isinstance(data, np.ndarray), "input data must be numpy array."
 
     if output_shape is not None:
-        assert (
-            isinstance(output_shape, (list, tuple)) and len(output_shape) == 2
-        ), "output_shape must be a list of 2 values (H, W)."
+        assert issequenceiterable(output_shape), f"output_shape must be a sequence: {type(output_shape)}."
+        assert len(output_shape) == 2, f"output_shape must be 2 values (H, W). {len(output_shape)}"
 
+        _resize_shape: Tuple[int, ...] = tuple(output_shape)
         if len(data.shape) == 3:
-            output_shape += (data.shape[2],)
+            _resize_shape = tuple(output_shape) + (data.shape[2],)
 
-        data = transform.resize(data, output_shape, order=interp_order, mode=mode, cval=cval, preserve_range=True)
+        data = transform.resize(data, _resize_shape, order=interp_order, mode=mode, cval=cval, preserve_range=True)
 
     if scale:
         assert np.min(data) >= 0 and np.max(data) <= 1, "png writer only can scale data in range [0, 1]."
