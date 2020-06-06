@@ -24,8 +24,9 @@ MonaiDictionaryKeySelection = TypeVar("MonaiDictionaryKeySelection", Iterable[Ha
 # The MonaiIndexSelection type is used to for defining variables
 # that store a subset of indexes to select items from a List or Array like objects.
 # The indexes must be integers, and if a container of indexes is specified, the
-# container must be iterable.
-MonaiIndexSelection = TypeVar("MonaiIndexSelection", Iterable[int], int)
+# container must be indexable. This type is often used to define selection index
+# or size index values.
+MonaiIndexSelection = TypeVar("MonaiIndexSelection", Sequence[int], int)
 
 
 class InterpolationOrder(IntEnum):
