@@ -15,8 +15,9 @@ defined in :py:class:`monai.transforms.utility.array`.
 Class names are ended with 'd' to denote dictionary-based transforms.
 """
 
-from typing import Optional, Hashable
+from typing import Optional
 
+from monai.config.type_definitions import KeysCollection
 from monai.utils.misc import ensure_tuple_rep
 from monai.transforms.compose import MapTransform
 from monai.transforms.post.array import SplitChannel, Activations, AsDiscrete, KeepLargestConnectedComponent
@@ -29,7 +30,7 @@ class SplitChanneld(MapTransform):
 
     """
 
-    def __init__(self, keys: Hashable, output_postfixes, to_onehot=False, num_classes=None):
+    def __init__(self, keys: KeysCollection, output_postfixes, to_onehot=False, num_classes=None):
         """
         Args:
             keys (hashable items): keys of the corresponding items to be transformed.
@@ -65,7 +66,7 @@ class Activationsd(MapTransform):
     Add activation layers to the input data specified by `keys`.
     """
 
-    def __init__(self, keys: Hashable, output_postfix: str = "act", sigmoid=False, softmax=False, other=None):
+    def __init__(self, keys: KeysCollection, output_postfix: str = "act", sigmoid=False, softmax=False, other=None):
         """
         Args:
             keys (hashable items): keys of the corresponding items to model output and label.
@@ -106,7 +107,7 @@ class AsDiscreted(MapTransform):
 
     def __init__(
         self,
-        keys: Hashable,
+        keys: KeysCollection,
         output_postfix: str = "discreted",
         argmax=False,
         to_onehot=False,
@@ -161,7 +162,7 @@ class KeepLargestConnectedComponentd(MapTransform):
 
     def __init__(
         self,
-        keys: Hashable,
+        keys: KeysCollection,
         applied_values,
         independent: bool = True,
         background: int = 0,
