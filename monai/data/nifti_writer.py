@@ -8,6 +8,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Any
 
 import nibabel as nib
 import numpy as np
@@ -115,7 +116,7 @@ def write_nifti(
     if data.ndim > 3:  # multi channel, resampling each channel
         spatial_shape, channel_shape = data.shape[:3], data.shape[3:]
         data_ = data.astype(dtype).reshape(list(spatial_shape) + [-1])
-        data_chns = []
+        data_chns: List[Any] = list()
         for chn in range(data_.shape[-1]):
             data_chns.append(
                 scipy.ndimage.affine_transform(
@@ -127,8 +128,9 @@ def write_nifti(
                     cval=cval,
                 )
             )
-        data_chns = np.stack(data_chns, axis=-1)
-        data_ = data_chns.reshape(list(data_chns.shape[:3]) + list(channel_shape))
+        data_chns_np: np.ndarray = np.stack(data_chns, axis=-1)
+        del data_chns
+        data_ = data_chns_np.reshape(list(data_chns_np.shape[:3]) + list(channel_shape))
     else:
         data_ = data.astype(dtype)
         data_ = scipy.ndimage.affine_transform(
