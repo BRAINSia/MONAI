@@ -36,6 +36,18 @@ from monai.transforms.utils import (
 from monai.utils.misc import ensure_tuple
 
 
+class Identity(Transform):
+    """
+    Identity transform output is same as the input.
+    """
+
+    def __init__(self):
+        pass
+
+    def __call__(self, img):
+        return img
+
+
 class Spacing(Transform):
     """
     Resample input image into the specified `pixdim`.
