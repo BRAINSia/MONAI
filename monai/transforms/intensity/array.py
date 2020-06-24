@@ -297,3 +297,18 @@ class RandAdjustContrast(Randomizable, Transform):
             return img
         adjuster = AdjustContrast(self.gamma_value)
         return adjuster(img)
+
+class Mixup(Transform):
+    """Linear combination of two input images:
+        `mixup = (opacity * image1) + ((1 - opacity) * image2)`
+
+    Args:
+        opacity: coefficient for the degree of blending.
+    """
+
+    def __init__(self, opacity: float) -> None:
+        assert 0.0 <= opacity <= 1.0, "opacity must be between zero and one inclusive"
+        self.opacity = opacity
+
+    def __call__(self, img1, img2):
+        return (self.opacity * img1) + ((1 - self.opacity) * img2)
