@@ -34,12 +34,13 @@ doIsortFix=false
 doFlake8Format=false
 doPytypeFormat=false
 doMypyFormat=false
+doDarglintFormat=false
 doCleanup=false
 
 NUM_PARALLEL=1
 
 function print_usage {
-    echo "runtests.sh [--codeformat] [--autofix] [--black] [--isort] [--flake8] [--pytype] [--mypy]"
+    echo "runtests.sh [--codeformat] [--autofix] [--black] [--isort] [--flake8] [--pytype] [--mypy] [--darglint]"
     echo "            [--nounittests] [--coverage] [--quick] [--net] [--dryrun] [-j number] [--clean] [--help] [--version]"
     echo ""
     echo "MONAI unit testing utilities."
@@ -56,6 +57,7 @@ function print_usage {
     echo "    --autofix         : format code using \"isort\" and \"black\""
     echo "    --isort           : perform \"isort\" import sort checks"
     echo "    --flake8          : perform \"flake8\" code format checks"
+    echo "    --darglint        : perform \"darglint\" docstring format checks"
     echo ""
     echo "Python type check options:"
     echo "    --pytype          : perform \"pytype\" static type checks"
@@ -169,6 +171,7 @@ do
             doFlake8Format=true
             doPytypeFormat=true
             doMypyFormat=true
+            doDarglintFormat=true
         ;;
         --black)
             doBlackFormat=true
@@ -190,6 +193,9 @@ do
         ;;
         --mypy)
             doMypyFormat=true
+        ;;
+        --darglint)
+            doDarglintFormat=true
         ;;
         -j|--jobs)
             NUM_PARALLEL=$2
@@ -400,6 +406,44 @@ then
         exit ${mypy_status}
     else
         : # mypy output already follows format
+    fi
+    set -e # enable exit on failure
+fi
+
+
+if [ $doDarglintFormat = true ]
+then
+    set +e  # disable exit on failure so that diagnostics can be given on failure
+    echo "${separator}${blue}darglint${noColor}"
+
+    # ensure that the necessary packages for code format testing are installed
+    if [[ ! -f "$(which darglint)" ]]
+    then
+        install_deps
+    fi
+    ${cmdPrefix}darglint --version
+
+    ${cmdPrefix}darglint \
+        "$(pwd)"/monai/application \
+        "$(pwd)"/monai/config \
+        "$(pwd)"/monai/data \
+        "$(pwd)"/monai/engines \
+        "$(pwd)"/monai/handlers \
+        "$(pwd)"/monai/inferers \
+        "$(pwd)"/monai/losses \
+        "$(pwd)"/monai/metrics \
+        "$(pwd)"/monai/networks \
+        "$(pwd)"/monai/transforms \
+        "$(pwd)"/monai/utils \
+        -v 2
+
+    darglint_status=$?
+    if [ ${darglint_status} -ne 0 ]
+    then
+        echo "${red}failed!${noColor}"
+        exit ${darglint_status}
+    else
+        echo "${green}passed!${noColor}"
     fi
     set -e # enable exit on failure
 fi
