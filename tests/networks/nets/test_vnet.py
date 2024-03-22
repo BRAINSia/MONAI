@@ -18,9 +18,10 @@ from parameterized import parameterized
 
 from monai.networks import eval_mode
 from monai.networks.nets import VNet
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import test_script_save
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_VNET_2D_1 = [
     {"spatial_dims": 2, "in_channels": 4, "out_channels": 1, "act": "elu", "dropout_dim": 1},

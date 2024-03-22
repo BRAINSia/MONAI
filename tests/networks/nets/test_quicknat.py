@@ -19,6 +19,7 @@ from parameterized import parameterized
 from monai.networks import eval_mode
 from monai.networks.nets import Quicknat
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import test_script_save
 
 _, has_se = optional_import("squeeze_and_excitation")
@@ -40,7 +41,7 @@ TEST_CASES = [
 class TestQuicknat(unittest.TestCase):
     @parameterized.expand(TEST_CASES)
     def test_shape(self, input_param, input_shape, expected_shape):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
         print(input_param)
         net = Quicknat(**input_param).to(device)
         with eval_mode(net):

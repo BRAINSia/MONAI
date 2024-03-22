@@ -45,6 +45,7 @@ from tests.test_utils import (
     skip_if_quick,
     test_script_save,
 )
+from monai.utils.misc import select_optimal_device
 
 if TYPE_CHECKING:
     import torchvision
@@ -57,7 +58,7 @@ has_hf_modules = "huggingface_hub" in sys.modules and "huggingface_hub.utils._er
 
 # from torchvision.models import ResNet50_Weights, resnet50
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_1 = [  # 3D, batch 3, 2 input channel
     {

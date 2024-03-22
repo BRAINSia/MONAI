@@ -19,6 +19,7 @@ from parameterized import parameterized
 from monai.networks.nets import Unet
 from monai.optimizers import generate_param_groups
 from monai.utils import ensure_tuple
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import assert_allclose
 
 TEST_CASE_1 = [{"layer_matches": [lambda x: x.model[-1]], "match_types": "select", "lr_values": [1]}, (1, 100), [5, 21]]
@@ -70,7 +71,7 @@ TEST_CASE_6 = [
 class TestGenerateParamGroups(unittest.TestCase):
     @parameterized.expand([TEST_CASE_1, TEST_CASE_2, TEST_CASE_3, TEST_CASE_4, TEST_CASE_5, TEST_CASE_6])
     def test_lr_values(self, input_param, expected_values, expected_groups):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
         net = Unet(
             spatial_dims=3, in_channels=1, out_channels=3, channels=(16, 32, 64), strides=(2, 2), num_res_units=1
         ).to(device)
@@ -86,7 +87,7 @@ class TestGenerateParamGroups(unittest.TestCase):
 
     def test_wrong(self):
         """overlapped"""
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
         net = Unet(
             spatial_dims=3, in_channels=1, out_channels=3, channels=(16, 32, 64), strides=(2, 2), num_res_units=1
         ).to(device)

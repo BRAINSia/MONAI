@@ -78,7 +78,7 @@ from monai.utils import (
 )
 from monai.utils.deprecate_utils import deprecated_arg_default
 from monai.utils.enums import GridPatchSort, PatchKeys, TraceKeys, TransformBackends
-from monai.utils.misc import ImageMetaKey as Key
+from monai.utils.misc import ImageMetaKey as Key, DEFAULT_DEVICE_MAX_PRECISION, DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from monai.utils.module import look_up_option
 from monai.utils.type_conversion import convert_data_type, get_equivalent_dtype, get_torch_dtype_from_string
 
@@ -140,7 +140,7 @@ class SpatialResample(InvertibleTransform, LazyTransform):
         mode: str | int = GridSampleMode.BILINEAR,
         padding_mode: str = GridSamplePadMode.BORDER,
         align_corners: bool = False,
-        dtype: DtypeLike = np.float64,
+        dtype: DtypeLike = DEFAULT_DEVICE_MAX_PRECISION,
         lazy: bool = False,
     ):
         """
@@ -1895,7 +1895,7 @@ class RandAffineGrid(Randomizable, LazyTransform):
 
         self.device = device
         self.dtype = dtype
-        self.affine: torch.Tensor | None = torch.eye(4, dtype=torch.float64)
+        self.affine: torch.Tensor | None = torch.eye(4, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
 
     def _get_rand_param(self, param_range, add_scalar: float = 0.0):
         out_param = []

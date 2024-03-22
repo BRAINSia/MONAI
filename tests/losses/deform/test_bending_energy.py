@@ -18,8 +18,9 @@ import torch
 from parameterized import parameterized
 
 from monai.losses.deform import BendingEnergyLoss
+from monai.utils.misc import select_optimal_device
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASES = [
     [{}, {"pred": torch.ones((1, 3, 5, 5, 5), device=device)}, 0.0],

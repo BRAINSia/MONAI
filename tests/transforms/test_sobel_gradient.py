@@ -17,6 +17,7 @@ import torch
 from parameterized import parameterized
 
 from monai.transforms import SobelGradients
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from tests.test_utils import assert_allclose
 
 IMAGE = torch.zeros(1, 16, 16, dtype=torch.float32)
@@ -86,38 +87,38 @@ TEST_CASE_10 = [  # Normalized gradients but non-normalized kernels
 
 TEST_CASE_KERNEL_0 = [
     {"kernel_size": 3, "dtype": torch.float64},
-    (torch.tensor([-0.5, 0.0, 0.5], dtype=torch.float64), torch.tensor([0.25, 0.5, 0.25], dtype=torch.float64)),
+    (torch.tensor([-0.5, 0.0, 0.5], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION), torch.tensor([0.25, 0.5, 0.25], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)),
 ]
 TEST_CASE_KERNEL_1 = [
     {"kernel_size": 5, "dtype": torch.float64},
     (
-        torch.tensor([-0.1250, -0.2500, 0.0000, 0.2500, 0.1250], dtype=torch.float64),
-        torch.tensor([0.0625, 0.2500, 0.3750, 0.2500, 0.0625], dtype=torch.float64),
+        torch.tensor([-0.1250, -0.2500, 0.0000, 0.2500, 0.1250], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION),
+        torch.tensor([0.0625, 0.2500, 0.3750, 0.2500, 0.0625], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION),
     ),
 ]
 TEST_CASE_KERNEL_2 = [
     {"kernel_size": 7, "dtype": torch.float64},
     (
-        torch.tensor([-0.03125, -0.125, -0.15625, 0.0, 0.15625, 0.125, 0.03125], dtype=torch.float64),
-        torch.tensor([0.015625, 0.09375, 0.234375, 0.3125, 0.234375, 0.09375, 0.015625], dtype=torch.float64),
+        torch.tensor([-0.03125, -0.125, -0.15625, 0.0, 0.15625, 0.125, 0.03125], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION),
+        torch.tensor([0.015625, 0.09375, 0.234375, 0.3125, 0.234375, 0.09375, 0.015625], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION),
     ),
 ]
 TEST_CASE_KERNEL_NON_NORMALIZED_0 = [
     {"kernel_size": 3, "normalize_kernels": False, "dtype": torch.float64},
-    (torch.tensor([-1.0, 0.0, 1.0], dtype=torch.float64), torch.tensor([1.0, 2.0, 1.0], dtype=torch.float64)),
+    (torch.tensor([-1.0, 0.0, 1.0], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION), torch.tensor([1.0, 2.0, 1.0], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)),
 ]
 TEST_CASE_KERNEL_NON_NORMALIZED_1 = [
     {"kernel_size": 5, "normalize_kernels": False, "dtype": torch.float64},
     (
-        torch.tensor([-1.0, -2.0, 0.0, 2.0, 1.0], dtype=torch.float64),
-        torch.tensor([1.0, 4.0, 6.0, 4.0, 1.0], dtype=torch.float64),
+        torch.tensor([-1.0, -2.0, 0.0, 2.0, 1.0], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION),
+        torch.tensor([1.0, 4.0, 6.0, 4.0, 1.0], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION),
     ),
 ]
 TEST_CASE_KERNEL_NON_NORMALIZED_2 = [
     {"kernel_size": 7, "normalize_kernels": False, "dtype": torch.float64},
     (
-        torch.tensor([-1.0, -4.0, -5.0, 0.0, 5.0, 4.0, 1.0], dtype=torch.float64),
-        torch.tensor([1.0, 6.0, 15.0, 20.0, 15.0, 6.0, 1.0], dtype=torch.float64),
+        torch.tensor([-1.0, -4.0, -5.0, 0.0, 5.0, 4.0, 1.0], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION),
+        torch.tensor([1.0, 6.0, 15.0, 20.0, 15.0, 6.0, 1.0], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION),
     ),
 ]
 

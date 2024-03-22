@@ -20,9 +20,10 @@ from monai.apps.reconstruction.networks.nets.coil_sensitivity_model import CoilS
 from monai.apps.reconstruction.networks.nets.complex_unet import ComplexUnet
 from monai.apps.reconstruction.networks.nets.varnet import VariationalNetworkModel
 from monai.networks import eval_mode
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import test_script_save
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device(select_optimal_device())
 coil_sens_model = CoilSensitivityModel(spatial_dims=2, features=[8, 16, 32, 64, 128, 8])
 refinement_model = ComplexUnet(spatial_dims=2, features=[8, 16, 32, 64, 128, 8])
 num_cascades = 2

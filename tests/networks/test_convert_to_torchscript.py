@@ -19,6 +19,7 @@ import torch
 
 from monai.networks import convert_to_torchscript
 from monai.networks.nets import UNet
+from monai.utils.misc import select_optimal_device
 
 
 class TestConvertToTorchScript(unittest.TestCase):
@@ -34,7 +35,7 @@ class TestConvertToTorchScript(unittest.TestCase):
                 extra_files={"foo.txt": b"bar"},
                 verify=True,
                 inputs=[torch.randn((16, 1, 32, 32), requires_grad=False)],
-                device="cuda" if torch.cuda.is_available() else "cpu",
+                device=select_optimal_device(),
                 rtol=1e-3,
                 atol=1e-4,
                 optimize=None,

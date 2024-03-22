@@ -26,7 +26,7 @@ from monai.networks.nets import DenseNet
 from monai.optimizers import LearningRateFinder
 from monai.transforms import Compose, EnsureChannelFirstd, LoadImaged, ScaleIntensityd, ToTensord
 from monai.utils import optional_import, set_determinism
-from monai.utils.misc import MONAIEnvVars
+from monai.utils.misc import MONAIEnvVars, select_optimal_device
 from tests.test_utils import skip_if_downloading_fails
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ RAND_SEED = 42
 random.seed(RAND_SEED)
 set_determinism(seed=RAND_SEED)
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 
 @unittest.skipUnless(sys.platform == "linux", "requires linux")

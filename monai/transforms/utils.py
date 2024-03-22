@@ -77,6 +77,7 @@ from monai.utils.type_conversion import (
     convert_to_dst_type,
     convert_to_numpy,
     convert_to_tensor,
+    force_valid_dtype,
 )
 
 measure, has_measure = optional_import("skimage.measure", "0.14.2", min_version)
@@ -779,7 +780,7 @@ def create_grid(
 
     """
     _backend = look_up_option(backend, TransformBackends)
-    _dtype = dtype or float
+    _dtype = force_valid_dtype(dtype, device)
     if _backend == TransformBackends.NUMPY:
         return _create_grid_numpy(spatial_size, spacing, homogeneous, _dtype)  # type: ignore
     if _backend == TransformBackends.TORCH:
@@ -815,6 +816,9 @@ def _create_grid_torch(
     compute a `spatial_size` mesh with the torch API.
     """
     spacing = spacing or tuple(1.0 for _ in spatial_size)
+    # xx = get_equivalent_dtype(dtype, torch.Tensor)
+    # if xx == torch.float64 and device == "mps":
+    #     print("Possible problem here.")
     ranges = [
         torch.linspace(
             -(d - 1.0) / 2.0 * s,
@@ -2466,7 +2470,8 @@ def distance_transform_edt(
     distance_transform_edt, has_cucim = optional_import(
         "cucim.core.operations.morphology", name="distance_transform_edt"
     )
-    use_cp = has_cp and has_cucim and isinstance(img, torch.Tensor) and img.device.type == "cuda"
+    use_cp = has_cp and has_cucim and isinstance(img, torch.Tensor) and img.device.type in ["cuda", "mps"]
+    raise RuntimeError(f"cuCIM required if cupy is not available  ::{img.device_type}::{img.device}::")
     if not return_distances and not return_indices:
         raise RuntimeError("Neither return_distances nor return_indices True")
 

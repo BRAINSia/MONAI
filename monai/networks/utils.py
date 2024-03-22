@@ -30,8 +30,8 @@ import torch.nn as nn
 
 from monai.apps.utils import get_logger
 from monai.config import PathLike
-from monai.utils.misc import ensure_tuple, save_obj, set_determinism
-from monai.utils.module import look_up_option, optional_import
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION, ensure_tuple, save_obj, select_optimal_device, set_determinism
+from monai.utils.module import look_up_option, optional_import, pytorch_after
 from monai.utils.type_conversion import convert_to_dst_type, convert_to_tensor
 
 onnx, _ = optional_import("onnx")
@@ -268,17 +268,17 @@ def normalize_transform(
             Setting this flag and `align_corners` will jointly specify the normalization source range.
     """
     shape = convert_to_tensor(shape, torch.float64, device=device, wrap_sequence=True, track_meta=False)
-    norm = shape.clone().detach().to(dtype=torch.float64, device=device)  # no in-place change
+    norm = shape.clone().detach().to(dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION, device=device)  # no in-place change
     if align_corners:
         norm[norm <= 1.0] = 2.0
         norm = 2.0 / (norm if zero_centered else norm - 1.0)
-        norm = torch.diag(torch.cat((norm, torch.ones((1,), dtype=torch.float64, device=device))))
+        norm = torch.diag(torch.cat((norm, torch.ones((1,), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION, device=device))))
         if not zero_centered:  # else shift is 0
             norm[:-1, -1] = -1.0
     else:
         norm[norm <= 0.0] = 2.0
         norm = 2.0 / (norm - 1.0 if zero_centered else norm)
-        norm = torch.diag(torch.cat((norm, torch.ones((1,), dtype=torch.float64, device=device))))
+        norm = torch.diag(torch.cat((norm, torch.ones((1,), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION, device=device))))
         if not zero_centered:
             norm[:-1, -1] = 1.0 / shape - 1.0
     norm = norm.unsqueeze(0).to(dtype=dtype)
@@ -764,7 +764,7 @@ def convert_to_onnx(
             inputs = list(inputs.values())
 
         if device is None:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            device = torch.device(select_optimal_device())
 
         inputs = [i.to(device) if isinstance(i, torch.Tensor) else i for i in inputs]
         model = model.to(device)
@@ -840,7 +840,7 @@ def convert_to_torchscript(
 
     if verify:
         if device is None:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            device = torch.device(select_optimal_device())
         if inputs is None:
             raise ValueError("Missing input data for verification.")
 

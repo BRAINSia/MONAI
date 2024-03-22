@@ -21,8 +21,47 @@ import unittest
 from pathlib import Path
 
 from monai.utils import PerfContext
+import html
 
 results: dict = {}
+failed_tests: dict = {}
+passed_tests: list = []
+
+monai_src_root: Path = Path(__file__).parent.parent
+
+
+def check_python_version() -> (bool, str):
+    required_python = ["3.8", "3.9", "3.10"]
+    current_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    if current_version not in required_python:
+        return False, (
+            f"Warning: Your Python version {current_version} is not supported.\n"
+            f"Supported versions: {required_python}"
+        )
+    return True, ""
+
+
+def colorize_traceback(formatted_tb):
+
+    # Start the HTML content
+    html_content = (
+        '<div style="font-family: monospace; background-color: #f9f9f9; padding: 10px; border: 1px solid #ccc;">'
+    )
+
+    # Add each line of the traceback with color coding
+    for line in formatted_tb.split("\n"):
+        line = html.escape(line)
+        if "File" in line and "line" in line:
+            html_content += f'<span style="color: blue;">{line}</span><br>'
+        elif "Error" in line or "Exception" in line:
+            html_content += f'<span style="color: red; font-weight: bold;">{line}</span><br>'
+        else:
+            html_content += f"<span>{line}</span><br>"
+
+    # Close the HTML content
+    html_content += "</div>"
+
+    return html_content
 
 
 class TimeLoggingTestResult(unittest.TextTestResult):
@@ -42,28 +81,66 @@ class TimeLoggingTestResult(unittest.TextTestResult):
     def stopTest(self, test):  # noqa: N802
         """On test end, get time, print, store and do normal behaviour."""
         elapsed = time.time() - self.start_time
-        name = self.getDescription(test)
-        self.stream.write(f"Finished test: {name} ({elapsed:.03}s)\n")
-        if name in results:
-            raise AssertionError(f"expected all keys to be unique, but {name} is duplicated")
-        results[name] = elapsed
         super().stopTest(test)
+        name = self.getDescription(test)
+        if name in results:
+            raise AssertionError(f"expected all keys to be unique: {name} already in use")
+        results[name] = elapsed
+        self.stream.write(f"Finished test: {name} ({elapsed:.03}s)\n")
+        if len(self.failures) > 0 or len(self.errors) > 0:
+            all_failure_modes = self.failures + self.errors
+            traceback_index = 1
+            failed_tests[name] = [f[traceback_index] for f in all_failure_modes]
+        else:
+            passed_tests.append(name)
 
 
 def print_results(results, discovery_time, thresh, status):
     # only keep results >= threshold
-    results = dict(filter(lambda x: x[1] > thresh, results.items()))
-    if len(results) == 0:
-        return
-    print(f"\n\n{status}, printing completed times >{thresh}s in ascending order...\n")
-    timings = dict(sorted(results.items(), key=lambda item: item[1]))
+    filtered_results = dict(filter(lambda x: x[1] > thresh, results.items()))
+    if len(filtered_results) > 0:
+        print(f"\n\n{status}, printing completed times >{thresh}s in ascending order...\n")
+        timings = dict(sorted(filtered_results.items(), key=lambda item: item[1]))
 
-    for r in timings:
-        if timings[r] >= thresh:
-            print(f"{r} ({timings[r]:.03}s)")
-    print(f"test discovery time: {discovery_time:.03}s")
-    print(f"total testing time: {sum(results.values()):.03}s")
-    print("Remember to check above times for any errors!")
+        for r in timings:
+            if timings[r] >= thresh:
+                print(f"{r} ({timings[r]:.03}s)")
+        print(f"test discovery time: {discovery_time:.03}s")
+        print(f"total testing time: {sum(filtered_results.values()):.03}s")
+        print("Remember to check above times for any errors!")
+
+    num_failed: int = len(failed_tests)
+    num_passed: int = len(passed_tests)
+
+    ignored_git_dir: Path = Path(__file__).parent.parent / ".coverage"
+    print(f"XXXXXXXXXXXXXXXX ---- {ignored_git_dir}")
+    ignored_git_dir.mkdir(exist_ok=True)
+    current_date: str = time.strftime("%Y-%m-%d_%H-%M-%S")
+    with open(ignored_git_dir / f"testing_outputs_{current_date}.html", "w") as f:
+        f.write("<html><head><title>Failed Tests</title></head><body>")
+        if num_failed > 0:
+            f.write("<h1>Failed Tests</h1>")
+            f.write(f"<p>Number of failed tests: {num_failed}</p>")
+            for test_name, errors_found in failed_tests.items():
+                f.write(f"<h2>{test_name}</h2>")
+                f.write(f"<pre>python3.10 -m tests.{test_name}</pre>")
+                for e in errors_found:
+                    html_content: str = colorize_traceback(e)
+                    f.write(f"{html_content}")
+        else:
+            f.write("<h1>All tests passed!</h1>")
+        f.write(f"<p>Number of passed tests: {num_passed}\nNumber of failed tests: {num_failed}</p>")
+        f.write("</body></html>")
+
+        # print("*" * 80)
+        # print(f"Failed cases: {num_failed}")
+        # for test_name, errors_found in failed_tests.items():
+        #     print(f"tests.{test_name}")
+        #     for e in errors_found:
+        #         print("- " * 40)
+        #         print(f"{e}")
+        #         print("- " * 40)
+    print(f"{num_failed} test cases failed, {num_passed} test cases passed, out of {num_failed+num_passed}")
 
 
 def parse_args():
@@ -120,6 +197,12 @@ if __name__ == "__main__":
     # If quick is desired, set environment variable
     if args.quick:
         os.environ["QUICKTEST"] = "True"
+
+    is_valid_python_version, version_check_msg = check_python_version()
+    if not is_valid_python_version:
+        print(version_check_msg)
+        print("Exiting..., please run the tests with a supported Python version.")
+        sys.exit(1)
 
     # Get all test names (optionally from some path with some pattern)
     with PerfContext() as pc:

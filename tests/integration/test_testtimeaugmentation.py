@@ -37,6 +37,7 @@ from monai.transforms.croppad.dictionary import SpatialPadd
 from monai.transforms.spatial.dictionary import RandFlipd
 from monai.utils import optional_import, set_determinism
 from monai.utils.enums import PostFix
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import TEST_NDARRAYS
 
 if TYPE_CHECKING:
@@ -80,7 +81,7 @@ class TestTestTimeAugmentation(unittest.TestCase):
 
         train_data = self.get_data(num_training_ims, input_size)
         test_data = self.get_data(1, input_size)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         transforms = Compose(
             [

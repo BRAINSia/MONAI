@@ -23,6 +23,7 @@ from nibabel.processing import resample_to_output
 from parameterized import parameterized
 
 from monai.transforms import Compose, EnsureChannelFirstd, LoadImaged, Orientationd, Spacingd
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 
 TESTS_PATH = Path(__file__).parents[1]
 FILES = tuple(
@@ -58,7 +59,7 @@ class TestLoadSpacingOrientation(unittest.TestCase):
         data_dict = self.load_image(filename)
         affine = data_dict["image"].affine
         data_dict["image"].meta["original_affine"] = data_dict["image"].affine = (
-            torch.tensor([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]], dtype=torch.float64) @ affine
+            torch.tensor([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION) @ affine
         )
         t = time.time()
         res_dict = Spacingd(keys="image", pixdim=(1, 2, 3), diagonal=True, padding_mode="zeros")(data_dict)
@@ -82,7 +83,7 @@ class TestLoadSpacingOrientation(unittest.TestCase):
         data_dict = self.load_image(FILES[1])
         affine = data_dict["image"].affine
         data_dict["image"].meta["original_affine"] = data_dict["image"].affine = (
-            torch.tensor([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]], dtype=torch.float64) @ affine
+            torch.tensor([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION) @ affine
         )
         res_dict = Spacingd(keys="image", pixdim=(1, 2, 3), diagonal=False, padding_mode="zeros")(data_dict)
         np.testing.assert_allclose(
@@ -123,7 +124,7 @@ class TestLoadSpacingOrientation(unittest.TestCase):
         data_dict = self.load_image(FILES[1])
         affine = data_dict["image"].affine
         data_dict["image"].meta["original_affine"] = data_dict["image"].affine = (
-            torch.tensor([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]], dtype=torch.float64) @ affine
+            torch.tensor([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION) @ affine
         )
         t = Compose(
             [

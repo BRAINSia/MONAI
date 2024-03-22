@@ -20,12 +20,13 @@ from monai.apps.detection.networks.retinanet_network import RetinaNet, resnet_fp
 from monai.networks import eval_mode
 from monai.networks.nets import resnet10, resnet18, resnet34, resnet50, resnet101, resnet152, resnet200
 from monai.utils import ensure_tuple, optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import dict_product, skip_if_quick, test_onnx_save, test_script_save
 
 _, has_torchvision = optional_import("torchvision")
 _, has_onnxruntime = optional_import("onnxruntime")
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 num_anchors = 7
 
 TEST_CASE_1 = [  # 3D, batch 3, 2 input channel

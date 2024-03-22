@@ -18,6 +18,7 @@ import torch
 from parameterized import parameterized
 
 from monai.networks.layers import polyval
+from monai.utils.misc import select_optimal_device
 
 TEST_CASES = [
     [[1.0, 2.5, -4.2], 5.0, 33.3],
@@ -39,7 +40,7 @@ class TestPolyval(unittest.TestCase):
 
     @parameterized.expand(TEST_CASES)
     def test_gpu(self, coef, x, expected):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
         x = torch.as_tensor(x, dtype=torch.float, device=device)
         x.requires_grad = True
         coef = torch.as_tensor(coef, dtype=torch.float, device=device)

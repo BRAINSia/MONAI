@@ -45,6 +45,7 @@ from monai.utils import (
     fall_back_tuple,
     optional_import,
 )
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 
 nib, has_nib = optional_import("nibabel")
 cupy, _ = optional_import("cupy")
@@ -129,7 +130,7 @@ def spatial_resample(
         xform = np.eye(spatial_rank + 1) if spatial_rank < 2 else np.linalg.solve(_s, _d)
     except (np.linalg.LinAlgError, RuntimeError) as e:
         raise ValueError(f"src affine is not invertible {_s}, {_d}.") from e
-    xform = convert_to_tensor(to_affine_nd(spatial_rank, xform)).to(device=img.device, dtype=torch.float64)
+    xform = convert_to_tensor(to_affine_nd(spatial_rank, xform)).to(device=img.device, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
     affine_unchanged = (
         allclose(src_affine, dst_affine, atol=AFFINE_TOL) and allclose(spatial_size, in_spatial_size)
     ) or (allclose(xform, np.eye(len(xform)), atol=AFFINE_TOL) and allclose(spatial_size, in_spatial_size))

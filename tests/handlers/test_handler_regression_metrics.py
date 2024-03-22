@@ -20,6 +20,7 @@ from ignite.engine import Engine
 
 from monai.handlers import MeanAbsoluteError, MeanSquaredError, PeakSignalToNoiseRatio, RootMeanSquaredError
 from monai.utils import set_determinism
+from monai.utils.misc import select_optimal_device
 
 
 # define a numpy flatten function that only preserves batch dimension
@@ -49,7 +50,7 @@ class TestHandlerRegressionMetrics(unittest.TestCase):
 
     def test_compute(self):
         set_determinism(seed=123)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         # regression metrics to check + truth metric function in numpy
         metrics = [
@@ -90,7 +91,7 @@ class TestHandlerRegressionMetrics(unittest.TestCase):
 
     def test_compute_engine(self):
         set_determinism(seed=123)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         # regression metrics to check + truth metric function in numpy
         metrics_names = ["MSE", "MAE", "RMSE", "PSNR"]
@@ -137,7 +138,7 @@ class TestHandlerRegressionMetrics(unittest.TestCase):
 
     def test_ill_shape(self):
         set_determinism(seed=123)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         # regression metrics to check + truth metric function in numpy
         metrics = [

@@ -30,6 +30,8 @@ from monai.utils import PytorchPadMode, convert_to_dst_type, convert_to_numpy, c
 
 __all__ = ["pad_nd", "pad_func", "crop_func", "crop_or_pad_nd"]
 
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
+
 
 def _convert_pt_pad_mode(padding_mode):
     """get the most similar mode of `pad` from ``padding_mode`` of the spatial resampling."""
@@ -196,7 +198,7 @@ def pad_func(
         shape = [d + s + e for d, (s, e) in zip(img_size, to_pad_list[1:])]
     else:
         shape = img_size
-        xform = torch.eye(int(spatial_rank) + 1, device=torch.device("cpu"), dtype=torch.float64)
+        xform = torch.eye(int(spatial_rank) + 1, device=torch.device("cpu"), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
     meta_info = TraceableTransform.track_transform_meta(
         img,
         sp_size=shape,

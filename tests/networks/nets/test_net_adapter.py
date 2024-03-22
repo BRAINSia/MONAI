@@ -18,9 +18,10 @@ from parameterized import parameterized
 
 from monai.networks import eval_mode
 from monai.networks.nets import NetAdapter, resnet18
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import test_script_save
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_0 = [{"num_classes": 1, "use_conv": True, "dim": 2}, (2, 3, 224, 224), (2, 1, 8, 1)]
 

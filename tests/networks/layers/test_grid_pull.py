@@ -20,6 +20,7 @@ from parameterized import parameterized
 from monai.networks.layers import grid_pull
 from monai.networks.utils import meshgrid_ij
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import skip_if_no_cpp_extension
 from tests.testing_data.cpp_resample_answers import Expected_1D_GP_bwd, Expected_1D_GP_fwd
 
@@ -36,7 +37,7 @@ def make_grid(shape, dtype=None, device=None, requires_grad=True):
 # 1D combinations of bounds/interpolations
 bounds = set(BType.__members__.values()) if has_b_type else []
 interps = set(PType.__members__.values()) if has_p_type else []
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 TEST_1D_GP = []
 for bound in bounds:
     for interp in interps:

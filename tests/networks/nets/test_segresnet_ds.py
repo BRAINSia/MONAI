@@ -17,10 +17,8 @@ import torch
 from parameterized import parameterized
 
 from monai.networks import eval_mode
-from monai.networks.nets import SegResNetDS, SegResNetDS2
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import dict_product, test_script_save
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
 
 TEST_CASE_SEGRESNET_DS = [
     [params, (2, 1, *([16] * params["spatial_dims"])), (2, 2, *([16] * params["spatial_dims"]))]

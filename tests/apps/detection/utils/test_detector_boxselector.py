@@ -17,9 +17,10 @@ import torch
 from parameterized import parameterized
 
 from monai.apps.detection.utils.box_selector import BoxSelector
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import assert_allclose
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 num_anchors = 7
 
 TEST_CASE = []

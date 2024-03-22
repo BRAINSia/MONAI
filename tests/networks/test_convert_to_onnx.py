@@ -20,15 +20,16 @@ from parameterized import parameterized
 
 from monai.networks import convert_to_onnx
 from monai.networks.nets import SegResNet, UNet
+from monai.utils.misc import select_optimal_device
+from monai.utils.module import pytorch_after
 from tests.test_utils import SkipIfNoModule, optional_import, skip_if_quick
 
 onnx, _ = optional_import("onnx")
 
-TORCH_DEVICE_OPTIONS = ["cpu"]
-
-# FIXME: CUDA seems to produce different model outputs during testing vs. ONNX outputs, use CPU only for now
-# if torch.cuda.is_available():
-#     TORCH_DEVICE_OPTIONS.append("cuda")
+if select_optimal_device() == "cpu":
+    TORCH_DEVICE_OPTIONS = ["cpu"]
+else:
+    TORCH_DEVICE_OPTIONS = ["cpu", select_optimal_device()]
 
 TESTS = list(itertools.product(TORCH_DEVICE_OPTIONS, [True, False], [True, False]))
 TESTS_ORT = list(itertools.product(TORCH_DEVICE_OPTIONS, [True]))

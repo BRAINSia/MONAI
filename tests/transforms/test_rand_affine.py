@@ -18,6 +18,7 @@ import torch
 from parameterized import parameterized
 
 from monai.transforms import RandAffine
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from monai.utils.type_conversion import convert_data_type
 from tests.lazy_transforms_utils import test_resampler_lazy
 from tests.test_utils import TEST_NDARRAYS_ALL, assert_allclose, is_tf32_env
@@ -145,7 +146,7 @@ class TestRandAffine(unittest.TestCase):
         g = RandAffine(**input_param)
         g.set_random_state(123)
         result = g(**input_data)
-        g.rand_affine_grid.affine = torch.eye(4, dtype=torch.float64)  # reset affine
+        g.rand_affine_grid.affine = torch.eye(4, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)  # reset affine
         test_resampler_lazy(g, result, input_param, input_data, seed=123, rtol=_rtol)
         if input_param.get("cache_grid", False):
             self.assertTrue(g._cached_grid is not None)

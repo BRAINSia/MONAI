@@ -19,11 +19,12 @@ from parameterized import parameterized
 
 from monai.data import MetaTensor, set_track_meta
 from monai.transforms import AffineGrid
+from monai.utils.misc import get_list_of_supported_device_types_or_none
 from tests.test_utils import TEST_NDARRAYS_ALL, assert_allclose, is_tf32_env
 
 TESTS = []
 for p in TEST_NDARRAYS_ALL:
-    for device in [None, "cpu", "cuda"] if torch.cuda.is_available() else [None, "cpu"]:
+    for device in get_list_of_supported_device_types_or_none():
         TESTS.append(
             [
                 {"device": device},

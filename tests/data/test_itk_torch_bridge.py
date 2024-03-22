@@ -36,13 +36,8 @@ from monai.data.itk_torch_bridge import (
 from monai.networks.blocks import Warp
 from monai.transforms import Affine
 from monai.utils import optional_import, set_determinism
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from tests.test_utils import (
-    assert_allclose,
-    skip_if_downloading_fails,
-    skip_if_quick,
-    test_is_quick,
-    testing_data_config,
-)
 
 itk, has_itk = optional_import("itk")
 _, has_nib = optional_import("nibabel")
@@ -153,7 +148,7 @@ class TestITKTorchAffineMatrixBridge(unittest.TestCase):
 
     def monai_affine_resample(self, metatensor, affine_matrix):
         affine = Affine(
-            affine=affine_matrix, padding_mode="zeros", mode="bilinear", dtype=torch.float64, image_only=True
+            affine=affine_matrix, padding_mode="zeros", mode="bilinear", dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION, image_only=True
         )
         output_tensor = affine(metatensor)
 
@@ -295,17 +290,17 @@ class TestITKTorchAffineMatrixBridge(unittest.TestCase):
         ndim = image.ndim
 
         # MONAI affine matrix
-        affine_matrix = torch.eye(ndim + 1, dtype=torch.float64)
+        affine_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
         affine_matrix[:ndim, :ndim] = torch.tensor(
             [
                 [0.55915995, 0.50344867, 0.43208387],
                 [0.01133669, 0.82088571, 0.86841365],
                 [0.30478496, 0.94998986, 0.32742505],
             ],
-            dtype=torch.float64,
+            dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION,
         )[:ndim, :ndim]
 
-        affine_matrix[:ndim, ndim] = torch.tensor([54.0, 2.7, -11.9], dtype=torch.float64)[:ndim]
+        affine_matrix[:ndim, ndim] = torch.tensor([54.0, 2.7, -11.9], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)[:ndim]
 
         # Spatial properties
         center_of_rotation = [-32.3, 125.1, 0.7][:ndim]

@@ -17,6 +17,7 @@ import torch
 from parameterized import parameterized
 
 from monai.engines import PrepareBatchDefault, SupervisedEvaluator
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import assert_allclose
 
 
@@ -49,7 +50,7 @@ class TestPrepareBatchDefault(unittest.TestCase):
         ]
     )
     def test_prepare_batch(self, dataloader, network, should_run):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = select_optimal_device()
         evaluator = SupervisedEvaluator(
             device=device,
             val_data_loader=dataloader,

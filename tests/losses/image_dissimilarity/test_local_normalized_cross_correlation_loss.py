@@ -18,8 +18,9 @@ import torch
 from parameterized import parameterized
 
 from monai.losses.image_dissimilarity import LocalNormalizedCrossCorrelationLoss
+from monai.utils.misc import select_optimal_device
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASES = [
     [

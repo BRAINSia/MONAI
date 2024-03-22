@@ -23,8 +23,9 @@ from monai.apps.pathology.losses import HoVerNetLoss
 from monai.transforms import GaussianSmooth, Rotate
 from monai.transforms.intensity.array import ComputeHoVerMaps
 from monai.utils.enums import HoVerNetBranch
+from monai.utils.misc import select_optimal_device
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 s = 10e-8
 t = 1.0 - s

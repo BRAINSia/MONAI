@@ -69,6 +69,7 @@ from monai.transforms import (
     reset_ops_id,
 )
 from monai.utils import first, get_seed, optional_import, set_determinism
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import make_nifti_image, make_rand_affine
 
 if TYPE_CHECKING:
@@ -480,7 +481,7 @@ class TestInverse(unittest.TestCase):
         dataset = CacheDataset(test_data, transform=transforms, progress=False)
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
         model = UNet(spatial_dims=2, in_channels=1, out_channels=1, channels=(2, 4), strides=(1,)).to(device)
 
         data = first(loader)

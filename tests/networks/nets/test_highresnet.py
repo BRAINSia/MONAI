@@ -18,9 +18,10 @@ from parameterized import parameterized
 
 from monai.networks import eval_mode
 from monai.networks.nets import HighResNet
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import DistTestCase, TimedCall, test_script_save
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_1 = [  # single channel 3D, batch 16
     {"spatial_dims": 3, "in_channels": 1, "out_channels": 3, "norm_type": "instance"},

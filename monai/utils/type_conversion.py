@@ -21,6 +21,7 @@ import torch
 import monai
 from monai.config.type_definitions import DtypeLike, NdarrayTensor
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device, DEFAULT_DEVICE_MAX_PRECISION
 
 cp, has_cp = optional_import("cupy")
 cp_ndarray, _ = optional_import("cupy", name="ndarray")
@@ -40,9 +41,19 @@ __all__ = [
     "convert_to_dst_type",
 ]
 
+
 # conversion map for types unsupported by torch.as_tensor
+
 UNSUPPORTED_TYPES = {np.dtype("uint16"): np.int32, np.dtype("uint32"): np.int64, np.dtype("uint64"): np.int64}
 
+if select_optimal_device() == "mps":
+    UNSUPPORTED_TYPES[np.dtype("double")] = np.float32
+    UNSUPPORTED_TYPES[np.dtype("float64")] = np.float32
+
+
+def force_valid_dtype(dtype: DtypeLike | torch.dtype | None, device=None) -> DtypeLike | torch.dtype:
+    _dtype = dtype or ( float if device != "mps" else torch.float32 )
+    return _dtype
 
 def get_numpy_dtype_from_string(dtype: str) -> np.dtype:
     """Get a numpy dtype (e.g., `np.float32`) from its string (e.g., `"float32"`)."""
@@ -61,7 +72,7 @@ def dtype_torch_to_numpy(dtype: torch.dtype) -> np.dtype:
 
 def dtype_numpy_to_torch(dtype: np.dtype) -> torch.dtype:
     """Convert a numpy dtype to its torch equivalent."""
-    return torch.from_numpy(np.empty([], dtype=dtype)).dtype
+    return torch.from_numpy(np.empty([], dtype=DEFAULT_DEVICE_MAX_PRECISION)).dtype
 
 
 def get_equivalent_dtype(dtype, data_type):
@@ -148,18 +159,27 @@ def convert_to_tensor(
                 tensor = tensor.astype(UNSUPPORTED_TYPES[tensor.dtype])
 
             # if input data is not Tensor, convert it to Tensor first
-            tensor = torch.as_tensor(tensor, **kwargs)
+            try:
+                tensor = torch.as_tensor(tensor, **kwargs)
+            except Exception:
+                pass
         if track_meta and not isinstance(tensor, monai.data.MetaTensor):
             return monai.data.MetaTensor(tensor)
         if not track_meta and isinstance(tensor, monai.data.MetaTensor):
             return tensor.as_tensor()
         return tensor
-
+    if dtype in [torch.float64, np.float64, type(float)] and device == "mps":
+            # PyTorch does not support float64 on GPU
+            print("Warning: PyTorch does not support float64 on mps GPU, converting to float32")
+    dtype = force_valid_dtype(dtype, device)
     if safe:
         data = safe_dtype_range(data, dtype)
     dtype = get_equivalent_dtype(dtype, torch.Tensor)
 
     if isinstance(data, torch.Tensor):
+        if dtype in [torch.float64, np.float64, type(float)] and device == "mps":
+            # PyTorch does not support float64 on GPU
+            print("Warning: PyTorch does not support float64 on mps GPU, converting to float32")
         return _convert_tensor(data).to(dtype=dtype, device=device, memory_format=torch.contiguous_format)
     if isinstance(data, np.ndarray):
         # skip array of string classes and object, refer to:
@@ -449,6 +469,9 @@ def safe_dtype_range(data: Any, dtype: DtypeLike | torch.dtype = None) -> Any:
 
     def _safe_dtype_range(data, dtype):
         output_dtype = dtype if dtype is not None else data.dtype
+        # Convert unsupported tensor type requests to supported types
+        if output_dtype in UNSUPPORTED_TYPES.keys():
+            output_dtype = UNSUPPORTED_TYPES[output_dtype]
         dtype_bound_value = get_dtype_bound_value(output_dtype)
         if data.ndim == 0:
             data_bound = (data, data)

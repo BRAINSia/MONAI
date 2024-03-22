@@ -19,6 +19,7 @@ import torch
 
 from monai.metrics import MAEMetric, MAPEMetric, MSEMetric, PSNRMetric, RMSEMetric
 from monai.utils import set_determinism
+from monai.utils.misc import select_optimal_device
 
 
 # define a numpy flatten function that only preserves batch dimension
@@ -53,7 +54,7 @@ class TestRegressionMetrics(unittest.TestCase):
 
     def test_shape_reduction(self):
         set_determinism(seed=123)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         # regression metrics to check
         metrics = [MSEMetric, MAEMetric, MAPEMetric, RMSEMetric, partial(PSNRMetric, max_val=1.0)]
@@ -96,7 +97,7 @@ class TestRegressionMetrics(unittest.TestCase):
 
     def test_compare_numpy(self):
         set_determinism(seed=123)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         # regression metrics to check + truth metric function in numpy
         metrics = [MSEMetric, MAEMetric, MAPEMetric, RMSEMetric, partial(PSNRMetric, max_val=1.0)]
@@ -126,7 +127,7 @@ class TestRegressionMetrics(unittest.TestCase):
 
     def test_ill_shape(self):
         set_determinism(seed=123)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         # regression metrics to check + truth metric function in numpy
         metrics = [MSEMetric, MAEMetric, MAPEMetric, RMSEMetric, partial(PSNRMetric, max_val=1.0)]
@@ -147,7 +148,7 @@ class TestRegressionMetrics(unittest.TestCase):
 
     def test_same_input(self):
         set_determinism(seed=123)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
         metrics = [MSEMetric, MAEMetric, MAPEMetric, RMSEMetric, partial(PSNRMetric, max_val=1.0)]
         results = [0.0, 0.0, 0.0, 0.0, float("inf")]
 
@@ -172,7 +173,7 @@ class TestRegressionMetrics(unittest.TestCase):
 
     def test_diff_input(self):
         set_determinism(seed=123)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
         metrics = [MSEMetric, MAEMetric, MAPEMetric, RMSEMetric, partial(PSNRMetric, max_val=1.0)]
         results = [1.0, 1.0, 100.0, 1.0, 0.0]
 

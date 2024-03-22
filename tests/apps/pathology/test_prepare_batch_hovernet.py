@@ -19,6 +19,7 @@ from parameterized import parameterized
 from monai.apps.pathology.engines import PrepareBatchHoVerNet
 from monai.engines import SupervisedEvaluator
 from monai.utils.enums import HoVerNetBranch
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import assert_allclose
 
 TEST_CASE_0 = [
@@ -37,7 +38,7 @@ class TestNet(torch.nn.Module):
 class TestPrepareBatchHoVerNet(unittest.TestCase):
     @parameterized.expand([TEST_CASE_0])
     def test_content(self, input_args, expected_value):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device(select_optimal_device())
         dataloader = [
             {
                 "image": torch.tensor([1, 2]),

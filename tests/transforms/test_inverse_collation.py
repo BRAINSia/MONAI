@@ -43,6 +43,7 @@ from monai.transforms import (
     Rotated,
 )
 from monai.utils import optional_import, set_determinism
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import make_nifti_image
 
 if TYPE_CHECKING:
@@ -64,7 +65,7 @@ TESTS_3D = [
         Rotated(keys=KEYS, angle=np.pi, dtype=np.float64),
         RandRotated(keys=KEYS, prob=0.5, range_x=np.pi, dtype=np.float64),
         RandAffined(
-            keys=KEYS, prob=0.5, rotate_range=np.pi, device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            keys=KEYS, prob=0.5, rotate_range=np.pi, device=torch.device(select_optimal_device())
         ),
     ]
 ]
@@ -81,7 +82,7 @@ TESTS_2D = [
         Rotated(keys=KEYS, angle=np.pi / 2, dtype=np.float64),
         RandRotated(keys=KEYS, prob=0.5, range_x=np.pi, dtype=np.float64),
         RandAffined(
-            keys=KEYS, prob=0.5, rotate_range=np.pi, device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            keys=KEYS, prob=0.5, rotate_range=np.pi, device=torch.device(select_optimal_device())
         ),
     ]
 ]

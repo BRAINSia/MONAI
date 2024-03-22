@@ -323,7 +323,7 @@ class DataAnalyzer:
             pin_memory=self.device.type == "cuda",
         )
         result_bycase: dict[DataStatsKeys, Any] = {DataStatsKeys.SUMMARY: {}, DataStatsKeys.BY_CASE: []}
-        device = self.device if self.device.type == "cpu" else torch.device("cuda", rank)
+        device = self.device if self.device.type != "cuda" else torch.device("cuda", rank)
         if device.type == "cuda" and not (torch.cuda.is_available() and torch.cuda.device_count() > 0):
             logger.info(f"device={device} but CUDA device is not available, using CPU instead.")
             device = torch.device("cpu")

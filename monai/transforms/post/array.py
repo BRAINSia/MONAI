@@ -397,7 +397,7 @@ class RemoveSmallObjects(Transform):
             affine = torch.as_tensor([[2,0,0,0],
                                       [0,1,0,0],
                                       [0,0,1,0],
-                                      [0,0,0,1]], dtype=torch.float64)
+                                      [0,0,0,1]], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
             data2 = MetaTensor(data1, affine=affine)
 
             # remove objects smaller than 3mm^3, input is MetaTensor

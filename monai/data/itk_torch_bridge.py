@@ -22,6 +22,7 @@ from monai.data.meta_tensor import MetaTensor
 from monai.data.utils import orientation_ras_lps
 from monai.transforms import EnsureChannelFirst
 from monai.utils import MetaKeys, SpaceKeys, convert_to_dst_type, optional_import
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 
 if TYPE_CHECKING:
     import itk
@@ -128,12 +129,12 @@ def itk_to_monai_affine(image, matrix, translation, center_of_rotation=None, ref
     if reference_image:
         reference_affine_matrix = _compute_reference_space_affine_matrix(image, reference_image)
     else:
-        reference_affine_matrix = torch.eye(ndim + 1, dtype=torch.float64)
+        reference_affine_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
 
     # Create affine matrix that includes translation
-    affine_matrix = torch.eye(ndim + 1, dtype=torch.float64)
-    affine_matrix[:ndim, :ndim] = torch.tensor(matrix, dtype=torch.float64)
-    affine_matrix[:ndim, ndim] = torch.tensor(translation, dtype=torch.float64)
+    affine_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
+    affine_matrix[:ndim, :ndim] = torch.tensor(matrix, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
+    affine_matrix[:ndim, ndim] = torch.tensor(translation, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
 
     # Adjust offset when center of rotation is different from center of the image
     if center_of_rotation:
@@ -244,10 +245,10 @@ def _assert_itk_regions_match_array(image):
 def _compute_offset_matrix(image, center_of_rotation) -> tuple[torch.Tensor, torch.Tensor]:
     ndim = image.ndim
     offset = np.asarray(get_itk_image_center(image)) - np.asarray(center_of_rotation)
-    offset_matrix = torch.eye(ndim + 1, dtype=torch.float64)
-    offset_matrix[:ndim, ndim] = torch.tensor(offset, dtype=torch.float64)
-    inverse_offset_matrix = torch.eye(ndim + 1, dtype=torch.float64)
-    inverse_offset_matrix[:ndim, ndim] = -torch.tensor(offset, dtype=torch.float64)
+    offset_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
+    offset_matrix[:ndim, ndim] = torch.tensor(offset, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
+    inverse_offset_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
+    inverse_offset_matrix[:ndim, ndim] = -torch.tensor(offset, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
 
     return offset_matrix, inverse_offset_matrix
 
@@ -255,8 +256,8 @@ def _compute_offset_matrix(image, center_of_rotation) -> tuple[torch.Tensor, tor
 def _compute_spacing_matrix(image) -> tuple[torch.Tensor, torch.Tensor]:
     ndim = image.ndim
     spacing = np.asarray(image.GetSpacing(), dtype=np.float64)
-    spacing_matrix = torch.eye(ndim + 1, dtype=torch.float64)
-    inverse_spacing_matrix = torch.eye(ndim + 1, dtype=torch.float64)
+    spacing_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
+    inverse_spacing_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
     for i, e in enumerate(spacing):
         spacing_matrix[i, i] = e
         inverse_spacing_matrix[i, i] = 1 / e
@@ -267,11 +268,11 @@ def _compute_spacing_matrix(image) -> tuple[torch.Tensor, torch.Tensor]:
 def _compute_direction_matrix(image) -> tuple[torch.Tensor, torch.Tensor]:
     ndim = image.ndim
     direction = itk.array_from_matrix(image.GetDirection())
-    direction_matrix = torch.eye(ndim + 1, dtype=torch.float64)
-    direction_matrix[:ndim, :ndim] = torch.tensor(direction, dtype=torch.float64)
+    direction_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
+    direction_matrix[:ndim, :ndim] = torch.tensor(direction, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
     inverse_direction = itk.array_from_matrix(image.GetInverseDirection())
-    inverse_direction_matrix = torch.eye(ndim + 1, dtype=torch.float64)
-    inverse_direction_matrix[:ndim, :ndim] = torch.tensor(inverse_direction, dtype=torch.float64)
+    inverse_direction_matrix = torch.eye(ndim + 1, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
+    inverse_direction_matrix[:ndim, :ndim] = torch.tensor(inverse_direction, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
 
     return direction_matrix, inverse_direction_matrix
 

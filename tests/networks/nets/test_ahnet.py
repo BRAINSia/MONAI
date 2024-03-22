@@ -19,9 +19,10 @@ from parameterized import parameterized
 from monai.networks import eval_mode
 from monai.networks.blocks import FCN, MCFCN
 from monai.networks.nets import AHNet
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import skip_if_quick, test_pretrained_networks, test_script_save
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_FCN_1 = [  # batch 2
     {"out_channels": 3, "upsample_mode": "transpose", "pretrained": False},

@@ -22,12 +22,13 @@ from monai.data import MetaTensor, set_track_meta
 from monai.transforms import Affine, Resize
 from monai.transforms.lazy.functional import apply_pending
 from monai.utils import optional_import
+from monai.utils.misc import get_list_of_supported_device_types_or_none
 from tests.lazy_transforms_utils import test_resampler_lazy
 from tests.test_utils import TEST_NDARRAYS_ALL, assert_allclose, test_local_inversion
 
 TESTS = []
 for p in TEST_NDARRAYS_ALL:
-    for device in [None, "cpu", "cuda"] if torch.cuda.is_available() else [None, "cpu"]:
+    for device in get_list_of_supported_device_types_or_none():
         TESTS.append(
             [
                 dict(padding_mode="zeros", device=device),

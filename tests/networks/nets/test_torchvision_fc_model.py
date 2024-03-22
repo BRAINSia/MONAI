@@ -21,13 +21,14 @@ from monai.networks import eval_mode
 from monai.networks.nets import TorchVisionFCModel, UNet
 from monai.networks.utils import look_up_named_module, set_named_module
 from monai.utils import min_version, optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import skip_if_downloading_fails
 
 Inception_V3_Weights, has_enum = optional_import("torchvision.models.inception", name="Inception_V3_Weights")
 
 _, has_tv = optional_import("torchvision", "0.12", min_version)
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_0 = [
     {"model_name": "resnet18", "num_classes": 1, "use_conv": True, "pretrained": False},

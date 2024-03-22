@@ -25,6 +25,7 @@ from monai.networks.blocks.encoder import BaseEncoder
 from monai.networks.layers.factories import Conv, Pool
 from monai.networks.layers.utils import get_act_layer, get_norm_layer, get_pool_layer
 from monai.utils import ensure_tuple_rep
+from monai.utils.misc import select_optimal_device
 from monai.utils.module import look_up_option, optional_import
 
 hf_hub_download, _ = optional_import("huggingface_hub", name="hf_hub_download")
@@ -489,7 +490,7 @@ def _resnet(
 ) -> ResNet:
     model: ResNet = ResNet(block, layers, block_inplanes, **kwargs)
     if pretrained:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
         if isinstance(pretrained, str):
             if Path(pretrained).exists():
                 logger.info(f"Loading weights from {pretrained}...")

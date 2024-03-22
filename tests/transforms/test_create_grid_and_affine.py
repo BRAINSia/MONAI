@@ -24,6 +24,7 @@ from monai.transforms import (
     create_shear,
     create_translate,
 )
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from tests.test_utils import assert_allclose, is_tf32_env
 
 
@@ -49,7 +50,7 @@ class TestCreateGrid(unittest.TestCase):
         g = create_grid((1, 1, 1), spacing=(1.2, 1.3, 1.0), dtype=np.int32)
         np.testing.assert_equal(g.dtype, np.int32)
 
-        g = create_grid((1, 1, 1), spacing=(1.2, 1.3, 1.0), dtype=torch.float64, backend="torch")
+        g = create_grid((1, 1, 1), spacing=(1.2, 1.3, 1.0), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION, backend="torch")
         np.testing.assert_equal(g.dtype, torch.float64)
 
         test_assert(

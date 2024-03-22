@@ -27,6 +27,7 @@ from monai.networks.nets import (
     ResNetFeatures,
 )
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import SkipIfNoModule, skip_if_downloading_fails, skip_if_quick
 
 torchvision, has_torchvision = optional_import("torchvision")
@@ -283,7 +284,7 @@ CASE_REGISTER_ENCODER = ["EfficientNetEncoder", "monai.networks.nets.EfficientNe
 class TestFLEXIBLEUNET(unittest.TestCase):
     @parameterized.expand(CASES_2D + CASES_3D + CASES_VARIATIONS)
     def test_shape(self, input_param, input_shape, expected_shape):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         with skip_if_downloading_fails():
             net = FlexibleUNet(**input_param).to(device)
@@ -297,7 +298,7 @@ class TestFLEXIBLEUNET(unittest.TestCase):
 
     @parameterized.expand(CASES_PRETRAIN)
     def test_pretrain(self, flexunet_input_param, feature_extractor_class, feature_extractor_input_param, weight_list):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         with skip_if_downloading_fails():
             net = FlexibleUNet(**flexunet_input_param).to(device)

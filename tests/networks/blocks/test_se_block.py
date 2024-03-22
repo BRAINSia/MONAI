@@ -19,9 +19,10 @@ from parameterized import parameterized
 from monai.networks import eval_mode
 from monai.networks.blocks import SEBlock
 from monai.networks.layers.factories import Act, Norm
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import test_script_save
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASES = [
     [

@@ -17,7 +17,6 @@ import unittest
 from pathlib import Path
 
 import numpy as np
-import torch
 from parameterized import parameterized
 
 from monai import __version__
@@ -25,12 +24,13 @@ from monai.apps import download_mmar, load_from_mmar
 from monai.apps.mmars import MODEL_DESC
 from monai.apps.mmars.mmars import _get_val
 from monai.utils import version_leq
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import skip_if_downloading_fails, skip_if_quick
 
 TEST_CASES = [["clara_pt_prostate_mri_segmentation"], ["clara_pt_covid19_ct_lesion_segmentation"]]
 TEST_EXTRACT_CASES = [
     (
-        {"item": "clara_pt_prostate_mri_segmentation", "map_location": "cuda" if torch.cuda.is_available() else "cpu"},
+        {"item": "clara_pt_prostate_mri_segmentation", "map_location": select_optimal_device()},
         "UNet",
         np.array(
             [
@@ -43,7 +43,7 @@ TEST_EXTRACT_CASES = [
     (
         {
             "item": "clara_pt_covid19_ct_lesion_segmentation",
-            "map_location": "cuda" if torch.cuda.is_available() else "cpu",
+            "map_location": select_optimal_device(),
         },
         "SegResNet",
         np.array(
@@ -69,7 +69,7 @@ TEST_EXTRACT_CASES = [
     (
         {
             "item": "clara_pt_fed_learning_brain_tumor_mri_segmentation",
-            "map_location": "cuda" if torch.cuda.is_available() else "cpu",
+            "map_location": select_optimal_device(),
             "model_file": os.path.join("models", "server", "best_FL_global_model.pt"),
         },
         "SegResNet",
@@ -96,7 +96,7 @@ TEST_EXTRACT_CASES = [
     (
         {
             "item": "clara_pt_pathology_metastasis_detection",
-            "map_location": "cuda" if torch.cuda.is_available() else "cpu",
+            "map_location": select_optimal_device(),
         },
         "TorchVisionFCModel",
         np.array(

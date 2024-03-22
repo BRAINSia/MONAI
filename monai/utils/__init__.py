@@ -95,6 +95,11 @@ from .misc import (
     run_cmd,
     sample_slices,
     save_obj,
+    select_optimal_device,
+    get_list_of_supported_device_types,
+    get_list_of_supported_device_types_or_none,
+    DEFAULT_DEVICE_MAX_PRECISION,
+    DEFAULT_DEVICE_TORCH_MAX_PRECISION,
     set_determinism,
     star_zip_with,
     str2bool,
@@ -155,4 +160,3 @@ from .type_conversion import (
     get_torch_dtype_from_string,
 )
 
-# have to explicitly bring these in here to resolve circular import issues

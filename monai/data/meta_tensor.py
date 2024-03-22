@@ -26,6 +26,7 @@ from monai.data.meta_obj import MetaObj, get_track_meta
 from monai.data.utils import affine_to_spacing, decollate_batch, list_data_collate, remove_extra_metadata
 from monai.utils import look_up_option
 from monai.utils.enums import LazyAttr, MetaKeys, PostFix, SpaceKeys
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from monai.utils.type_conversion import convert_data_type, convert_to_dst_type, convert_to_numpy, convert_to_tensor
 
 __all__ = ["MetaTensor"]
@@ -75,7 +76,7 @@ class MetaTensor(MetaObj, torch.Tensor):
             affine = torch.as_tensor([[2,0,0,0],
                                       [0,2,0,0],
                                       [0,0,2,0],
-                                      [0,0,0,1]], dtype=torch.float64)
+                                      [0,0,0,1]], dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
             meta = {"some": "info"}
             m = MetaTensor(t, affine=affine, meta=meta)
             m2 = m + m
@@ -343,7 +344,7 @@ class MetaTensor(MetaObj, torch.Tensor):
             return NotImplemented
 
     @staticmethod
-    def get_default_affine(dtype=torch.float64) -> torch.Tensor:
+    def get_default_affine(dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION) -> torch.Tensor:
         return torch.eye(4, device=torch.device("cpu"), dtype=dtype)
 
     def as_tensor(self) -> torch.Tensor:
@@ -462,13 +463,13 @@ class MetaTensor(MetaObj, torch.Tensor):
 
     @property
     def affine(self) -> torch.Tensor:
-        """Get the affine. Defaults to ``torch.eye(4, dtype=torch.float64)``"""
+        """Get the affine. Defaults to ``torch.eye(4, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)``"""
         return self.meta.get(MetaKeys.AFFINE, self.get_default_affine())  # type: ignore
 
     @affine.setter
     def affine(self, d: NdarrayTensor) -> None:
         """Set the affine."""
-        self.meta[MetaKeys.AFFINE] = torch.as_tensor(d, device=torch.device("cpu"), dtype=torch.float64)
+        self.meta[MetaKeys.AFFINE] = torch.as_tensor(d, device=torch.device("cpu"), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
 
     @property
     def pixdim(self):
@@ -494,7 +495,7 @@ class MetaTensor(MetaObj, torch.Tensor):
         if r not in (2, 3):
             warnings.warn(f"Only 2d and 3d affine are supported, got {r}d input.")
         for p in self.pending_operations:
-            next_matrix = convert_to_tensor(p.get(LazyAttr.AFFINE), dtype=torch.float64)
+            next_matrix = convert_to_tensor(p.get(LazyAttr.AFFINE), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
             if next_matrix is None:
                 continue
             res = convert_to_dst_type(res, next_matrix)[0]

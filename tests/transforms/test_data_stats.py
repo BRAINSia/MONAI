@@ -25,6 +25,7 @@ from parameterized import parameterized
 
 from monai.data.meta_tensor import MetaTensor
 from monai.transforms import DataStats
+from monai.utils.misc import select_optimal_device
 
 TEST_CASE_1 = [
     {
@@ -123,7 +124,7 @@ TEST_CASE_7 = [
         "additional_info": lambda x: torch.mean(x.float()),
         "name": "DataStats",
     },
-    torch.tensor([[0, 1], [1, 2]]).to("cuda" if torch.cuda.is_available() else "cpu"),
+    torch.tensor([[0, 1], [1, 2]]).to(select_optimal_device()),
     (
         "test data statistics:\nType: <class 'torch.Tensor'>\nShape: torch.Size([2, 2])\nValue range: (0, 2)\n"
         "Value: tensor([[0, 1],\n        [1, 2]])\nAdditional info: 1.0"

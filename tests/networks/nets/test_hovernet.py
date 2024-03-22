@@ -19,9 +19,10 @@ from parameterized import parameterized
 from monai.networks import eval_mode, train_mode
 from monai.networks.nets import HoVerNet
 from monai.networks.nets.hovernet import _DenseLayerDecoder
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import test_script_save
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_0 = [  # fast mode
     {"out_classes": 5, "mode": HoVerNet.Mode.FAST},

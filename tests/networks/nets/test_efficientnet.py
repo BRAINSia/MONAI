@@ -29,9 +29,8 @@ from monai.networks.nets import (
     get_efficientnet_image_size,
 )
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import skip_if_downloading_fails, skip_if_quick, test_pretrained_networks, test_script_save
-
-TESTS_PATH = Path(__file__).parents[2]
 
 if TYPE_CHECKING:
     import torchvision
@@ -253,7 +252,7 @@ CASE_EXTRACT_FEATURES = [
 class TestEFFICIENTNET(unittest.TestCase):
     @parameterized.expand(CASES_1D + CASES_2D + CASES_3D + CASES_VARIATIONS)
     def test_shape(self, input_param, input_shape, expected_shape):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         with skip_if_downloading_fails():
             net = EfficientNetBN(**input_param).to(device)
@@ -267,7 +266,7 @@ class TestEFFICIENTNET(unittest.TestCase):
 
     @parameterized.expand(CASES_1D + CASES_2D)
     def test_non_default_shapes(self, input_param, input_shape, expected_shape):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         with skip_if_downloading_fails():
             net = EfficientNetBN(**input_param).to(device)
@@ -289,7 +288,7 @@ class TestEFFICIENTNET(unittest.TestCase):
     @skipUnless(has_torchvision, "Requires `torchvision` package.")
     @skipUnless(has_pil, "Requires `pillow` package.")
     def test_kitty_pretrained(self, input_param, image_path, expected_label):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         # open image
         image_size = get_efficientnet_image_size(input_param["model_name"])
@@ -381,7 +380,7 @@ class TestEFFICIENTNET(unittest.TestCase):
 class TestExtractFeatures(unittest.TestCase):
     @parameterized.expand(CASE_EXTRACT_FEATURES)
     def test_shape(self, input_param, input_shape, expected_shapes):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = select_optimal_device()
 
         with skip_if_downloading_fails():
             net = EfficientNetBNFeatures(**input_param).to(device)

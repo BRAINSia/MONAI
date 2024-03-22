@@ -34,7 +34,7 @@ from monai.utils import (
     convert_to_numpy,
     convert_to_tensor,
 )
-from monai.utils.misc import MONAIEnvVars
+from monai.utils.misc import MONAIEnvVars, DEFAULT_DEVICE_TORCH_MAX_PRECISION
 
 __all__ = ["TraceableTransform", "InvertibleTransform"]
 
@@ -211,9 +211,9 @@ class TraceableTransform(Transform):
         if not lazy and affine is not None and isinstance(data_t, MetaTensor):
             # not lazy evaluation, directly update the metatensor affine (don't push to the stack)
             orig_affine = data_t.peek_pending_affine()
-            orig_affine = convert_to_dst_type(orig_affine, affine, dtype=torch.float64)[0]
+            orig_affine = convert_to_dst_type(orig_affine, affine, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)[0]
             try:
-                affine = orig_affine @ to_affine_nd(len(orig_affine) - 1, affine, dtype=torch.float64)
+                affine = orig_affine @ to_affine_nd(len(orig_affine) - 1, affine, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
             except RuntimeError as e:
                 if orig_affine.ndim > 2:
                     if data_t.is_batch:
@@ -223,7 +223,7 @@ class TraceableTransform(Transform):
                     raise RuntimeError(msg) from e
                 else:
                     raise
-            out_obj.meta[MetaKeys.AFFINE] = convert_to_tensor(affine, device=torch.device("cpu"), dtype=torch.float64)
+            out_obj.meta[MetaKeys.AFFINE] = convert_to_tensor(affine, device=torch.device("cpu"), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
             if MetaKeys.PIXDIM in out_obj.meta:
                 spacing = affine_to_spacing(out_obj.meta[MetaKeys.AFFINE])
                 out_obj.meta[MetaKeys.PIXDIM][1 : 1 + len(spacing)] = spacing

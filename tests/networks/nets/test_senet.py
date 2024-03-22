@@ -24,6 +24,7 @@ import monai.networks.nets.senet as se_mod
 from monai.networks import eval_mode
 from monai.networks.nets import SENet, SENet154, SEResNet50, SEResNet101, SEResNet152, SEResNext50, SEResNext101
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import test_is_quick, test_pretrained_networks, test_script_save, testing_data_config
 
 if TYPE_CHECKING:
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
 else:
     pretrainedmodels, has_cadene_pretrain = optional_import("pretrainedmodels")
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 NET_ARGS = {"spatial_dims": 3, "in_channels": 2, "num_classes": 2}
 TEST_CASE_1 = [SENet154, NET_ARGS]

@@ -21,6 +21,7 @@ from parameterized import parameterized
 from monai.networks import eval_mode
 from monai.networks.nets import DenseNet121, Densenet169, DenseNet264, densenet201
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import skip_if_downloading_fails, skip_if_quick, test_script_save
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
 else:
     torchvision, has_torchvision = optional_import("torchvision")
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_1 = [  # 4-channel 3D, batch 2
     {"pretrained": False, "spatial_dims": 3, "in_channels": 2, "out_channels": 3, "norm": ("instance", {"eps": 1e-5})},

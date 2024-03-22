@@ -22,6 +22,7 @@ from monai.config.deviceconfig import USE_COMPILED
 from monai.networks.blocks.warp import Warp
 from monai.transforms import LoadImaged
 from monai.utils import GridSampleMode, GridSamplePadMode
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from tests.test_utils import SkipIfNoModule, download_url_or_skip_test, skip_if_quick, testing_data_config
 
 LOW_POWER_TEST_CASES = [  # run with BUILD_MONAI=1 to test csrc/resample, BUILD_MONAI=0 to test native grid_sample
@@ -142,8 +143,8 @@ class TestWarp(unittest.TestCase):
         for b in GridSampleMode:
             for p in GridSamplePadMode:
                 warp_layer = Warp(mode=b.value, padding_mode=p.value)
-                input_image = torch.rand((2, 3, 20, 20), dtype=torch.float64) * 10.0
-                ddf = torch.rand((2, 2, 20, 20), dtype=torch.float64) * 2.0
+                input_image = torch.rand((2, 3, 20, 20), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION) * 10.0
+                ddf = torch.rand((2, 2, 20, 20), dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION) * 2.0
                 input_image.requires_grad = True
                 ddf.requires_grad = False  # Jacobian mismatch for output 0 with respect to input 1
                 gradcheck(warp_layer, (input_image, ddf), atol=1e-2, eps=1e-2)

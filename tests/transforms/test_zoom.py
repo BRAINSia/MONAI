@@ -14,10 +14,10 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
-import torch
 from parameterized import parameterized
 from scipy.ndimage import zoom as zoom_scipy
 
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from monai.data import MetaTensor, set_track_meta
 from monai.transforms import Zoom
 from monai.transforms.lazy.functional import apply_pending
@@ -47,7 +47,7 @@ class TestZoom(NumpyImageTestCase2D):
     def test_pending_ops(self, zoom, mode, align_corners=False, keep_size=False):
         im = MetaTensor(self.imt[0], meta={"a": "b", "affine": DEFAULT_TEST_AFFINE})
         zoom_fn = Zoom(
-            zoom=zoom, mode="bilinear", keep_size=keep_size, dtype=torch.float64, align_corners=align_corners
+            zoom=zoom, mode="bilinear", keep_size=keep_size, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION, align_corners=align_corners
         )
         # non-lazy
         expected = zoom_fn(im)

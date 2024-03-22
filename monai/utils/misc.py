@@ -75,6 +75,12 @@ __all__ = [
     "ConvertUnits",
     "check_kwargs_exist_in_class_init",
     "run_cmd",
+    "select_optimal_device",
+    "get_list_of_supported_device_types",
+    "get_list_of_supported_device_types_or_none",
+    "DEFAULT_DEVICE_MAX_PRECISION",
+    "DEFAULT_DEVICE_TORCH_MAX_PRECISION",
+    "flatten_dict",
 ]
 
 
@@ -701,6 +707,7 @@ def prob2class(x: torch.Tensor, sigmoid: bool = False, threshold: float = 0.5, *
     Compute the lab from the probability of predicted feature maps
 
     Args:
+        x: input data to compute the label.
         sigmoid: If the sigmoid function should be used.
         threshold: threshold value to activate the sigmoid function.
     """
@@ -929,3 +936,27 @@ def flatten_dict(metrics: dict[str, Any]) -> dict[str, Any]:
         else:
             result[key] = value
     return result
+
+
+def select_optimal_device() -> str:
+    """Select the optimal device to use for computation device."""
+    if torch.cuda.is_available():
+        return "cuda"  # If CUDA is available, use it.
+    elif torch.backends.mps.is_available():
+        os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+        return "mps"  # If on Apple Mac with MPS devices, use it.
+    return "cpu"  # Fallback to CPU.
+
+
+def get_list_of_supported_device_types() -> list[str]:
+    """Get the supported device types for computation device."""
+    return list({"cpu", select_optimal_device()})
+
+
+def get_list_of_supported_device_types_or_none() -> list[str | None]:
+    """Get the supported device types for computation device."""
+    return ["cpu", select_optimal_device(), None]
+
+
+DEFAULT_DEVICE_MAX_PRECISION = np.float64 if select_optimal_device() != "mps" else np.float32
+DEFAULT_DEVICE_TORCH_MAX_PRECISION = torch.float64 if select_optimal_device() != "mps" else torch.float32

@@ -18,8 +18,9 @@ import torch
 from parameterized import parameterized
 
 from monai.losses.deform import DiffusionLoss
+from monai.utils.misc import select_optimal_device
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASES = [
     # all first partials are zero, so the diffusion loss is also zero

@@ -21,6 +21,7 @@ from monai.networks import eval_mode
 from monai.networks.blocks import Warp
 from monai.networks.nets import GlobalNet
 from monai.networks.nets.regunet import AffineHead
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import assert_allclose, test_script_save
 
 TEST_CASES_AFFINE_TRANSFORM = [
@@ -74,7 +75,7 @@ class TestAffineHead(unittest.TestCase):
         np.testing.assert_allclose(result.cpu().numpy(), expected_val.cpu().numpy(), rtol=1e-4, atol=1e-4)
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 
 class TestGlobalNet(unittest.TestCase):

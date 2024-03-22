@@ -27,6 +27,7 @@ from monai.apps import check_hash
 from monai.bundle import ConfigParser, create_workflow, load
 from monai.bundle.scripts import _examine_monai_version, _list_latest_versions, download
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import (
     assert_allclose,
     command_line_tests,
@@ -69,13 +70,13 @@ TEST_CASE_7 = [
     ["model.pt", "model.ts", "network.json", "test_output.pt", "test_input.pt"],
     "test_bundle",
     "Project-MONAI/MONAI-extra-test-data/0.8.1",
-    "cuda" if torch.cuda.is_available() else "cpu",
+    select_optimal_device(),
     "model.pt",
 ]
 
 TEST_CASE_8 = [
     "spleen_ct_segmentation",
-    "cuda" if torch.cuda.is_available() else "cpu",
+    select_optimal_device(),
     {"spatial_dims": 3, "out_channels": 5},
 ]
 
@@ -84,7 +85,7 @@ TEST_CASE_9 = [
     "test_bundle",
     "0.1.1",
     "Project-MONAI/MONAI-extra-test-data/0.8.1",
-    "cuda" if torch.cuda.is_available() else "cpu",
+    select_optimal_device(),
     "model.ts",
 ]
 
@@ -221,6 +222,10 @@ class TestDownload(unittest.TestCase):
     @skip_if_quick
     @skipIf(os.getenv("NGC_API_KEY", None) is None, "NGC API key required for this test")
     def test_ngc_private_source_download_bundle(self, bundle_files, bundle_name, _url):
+        if os.getenv("NGC_API_KEY", None) is None or  os.getenv("NGC_ORG", None) is None or os.getenv("NGC_TEAM", None):
+            print("Skipping ngc download testing due to missing environmental variables")
+            print("  -- Set NGC_API_KEY, NGC_ORG, and NGC_TEAM to enable this test")
+            return
         with skip_if_downloading_fails():
             # download a single file from url, also use `args_file`
             with tempfile.TemporaryDirectory() as tempdir:

@@ -17,6 +17,7 @@ import torch
 from parameterized import parameterized
 
 from monai.engines import PrepareBatchExtraInput, SupervisedEvaluator
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import assert_allclose
 
 TEST_CASE_0 = [
@@ -45,7 +46,7 @@ class TestNet(torch.nn.Module):
 class TestPrepareBatchExtraInput(unittest.TestCase):
     @parameterized.expand([TEST_CASE_0, TEST_CASE_1, TEST_CASE_2])
     def test_content(self, input_args, expected_value):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device(select_optimal_device())
         dataloader = [
             {
                 "image": torch.tensor([1, 2]),

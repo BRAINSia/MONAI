@@ -20,6 +20,7 @@ from parameterized import parameterized
 from monai.networks import eval_mode
 from monai.networks.nets import DynUNet
 from monai.utils import optional_import
+from monai.utils.misc import select_optimal_device
 from tests.test_utils import assert_allclose, dict_product, skip_if_no_cuda, skip_if_windows, test_script_save
 
 InstanceNorm3dNVFuser, _ = optional_import("apex.normalization", name="InstanceNorm3dNVFuser")
@@ -30,7 +31,7 @@ if ON_AARCH64:
 else:
     rtol, atol = 1e-4, 1e-4
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_DYNUNET_2D = []
 out_channels_2d = 2

@@ -21,6 +21,7 @@ from monai.data.meta_tensor import MetaTensor
 from monai.transforms.post.array import RemoveSmallObjects
 from monai.transforms.post.dictionary import RemoveSmallObjectsd
 from monai.utils import optional_import
+from monai.utils.misc import DEFAULT_DEVICE_TORCH_MAX_PRECISION
 from tests.test_utils import TEST_NDARRAYS, SkipIfNoModule, assert_allclose
 
 morphology, has_morphology = optional_import("skimage.morphology")
@@ -33,7 +34,7 @@ TEST_INPUT1 = np.array([[[0, 0, 2, 1, 0], [1, 1, 1, 2, 0], [1, 1, 1, 0, 1]]])
 TEST_OUTPUT1 = np.array([[[0, 0, 2, 1, 0], [1, 1, 1, 2, 0], [1, 1, 1, 0, 0]]])
 
 TEST_INPUT2 = np.array([[[1, 1, 1, 0, 0], [1, 1, 1, 0, 0], [0, 0, 0, 0, 0], [0, 1, 1, 0, 1], [0, 0, 0, 1, 1]]])
-affine = torch.eye(4, dtype=torch.float64)
+affine = torch.eye(4, dtype=DEFAULT_DEVICE_TORCH_MAX_PRECISION)
 affine[0, 0] = 2.0
 TEST_INPUT3 = MetaTensor(TEST_INPUT2, affine=affine)
 

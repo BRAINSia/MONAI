@@ -18,12 +18,13 @@ from parameterized import parameterized
 
 from monai.networks import eval_mode
 from monai.networks.nets import MILModel
+from monai.utils.misc import select_optimal_device
 from monai.utils.module import optional_import
 from tests.test_utils import skip_if_downloading_fails, test_script_save
 
 models, _ = optional_import("torchvision.models")
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = select_optimal_device()
 
 TEST_CASE_MILMODEL = []
 for num_classes in [1, 5]:

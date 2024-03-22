@@ -19,12 +19,13 @@ import torch
 from parameterized import parameterized
 
 from monai.transforms import Affined
+from monai.utils.misc import get_list_of_supported_device_types_or_none
 from tests.lazy_transforms_utils import test_resampler_lazy
 from tests.test_utils import TEST_NDARRAYS_ALL, assert_allclose, test_local_inversion
 
 TESTS = []
 for p in TEST_NDARRAYS_ALL:
-    for device in [None, "cpu", "cuda"] if torch.cuda.is_available() else [None, "cpu"]:
+    for device in get_list_of_supported_device_types_or_none():
         TESTS.append(
             [
                 dict(keys="img", padding_mode="zeros", spatial_size=(-1, 0), device=device),
@@ -170,6 +171,8 @@ for p in TEST_NDARRAYS_ALL:
 class TestAffined(unittest.TestCase):
     @parameterized.expand(TESTS)
     def test_affine(self, input_param, input_data, expected_val):
+        if input_param.get("device") != "mps":
+            pass
         input_copy = deepcopy(input_data)
         g = Affined(**input_param)
         result = g(input_data)
