@@ -23,6 +23,8 @@ from pathlib import Path
 from monai.utils import PerfContext
 
 results: dict = {}
+failed_tests: dict = {}
+passed_tests: list = []
 
 
 class TimeLoggingTestResult(unittest.TextTestResult):
@@ -48,22 +50,46 @@ class TimeLoggingTestResult(unittest.TextTestResult):
             raise AssertionError(f"expected all keys to be unique, but {name} is duplicated")
         results[name] = elapsed
         super().stopTest(test)
+        name = self.getDescription(test)
+        if name in results:
+            raise AssertionError(f"expected all keys to be unique: {name} already in use")
+        results[name] = elapsed
+        self.stream.write(f"Finished test: {name} ({elapsed:.03}s)\n")
+        if len(self.failures) > 0 or len(self.errors) > 0:
+            all_failure_modes = self.failures + self.errors
+            traceback_index = 1
+            failed_tests[name] = [f[traceback_index] for f in all_failure_modes]
+        else:
+            passed_tests.append(name)
 
 
 def print_results(results, discovery_time, thresh, status):
     # only keep results >= threshold
-    results = dict(filter(lambda x: x[1] > thresh, results.items()))
-    if len(results) == 0:
+    filtered_results = dict(filter(lambda x: x[1] > thresh, results.items()))
+    if len(filtered_results) == 0:
         return
     print(f"\n\n{status}, printing completed times >{thresh}s in ascending order...\n")
-    timings = dict(sorted(results.items(), key=lambda item: item[1]))
+    timings = dict(sorted(filtered_results.items(), key=lambda item: item[1]))
 
     for r in timings:
         if timings[r] >= thresh:
             print(f"{r} ({timings[r]:.03}s)")
     print(f"test discovery time: {discovery_time:.03}s")
-    print(f"total testing time: {sum(results.values()):.03}s")
+    print(f"total testing time: {sum(filtered_results.values()):.03}s")
     print("Remember to check above times for any errors!")
+
+    num_failed: int = len(failed_tests)
+    num_passed: int = len(passed_tests)
+    if num_failed > 0:
+        print("*" * 80)
+        print(f"Failed cases: {num_failed}")
+        for test_name, errors_found in failed_tests.items():
+            print(f"tests.{test_name}")
+            for e in errors_found:
+                print("- " * 40)
+                print(f"{e}")
+                print("- " * 40)
+    print(f"{num_failed} test cases failed, {num_passed} test cases passed, out of {num_failed+num_passed}")
 
 
 def parse_args():
