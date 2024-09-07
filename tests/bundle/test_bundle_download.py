@@ -221,6 +221,10 @@ class TestDownload(unittest.TestCase):
     @skip_if_quick
     @skipIf(os.getenv("NGC_API_KEY", None) is None, "NGC API key required for this test")
     def test_ngc_private_source_download_bundle(self, bundle_files, bundle_name, _url):
+        if os.getenv("NGC_API_KEY", None) is None or  os.getenv("NGC_ORG", None) is None or os.getenv("NGC_TEAM", None):
+            print("Skipping ngc download testing due to missing environmental variables")
+            print("  -- Set NGC_API_KEY, NGC_ORG, and NGC_TEAM to enable this test")
+            return
         with skip_if_downloading_fails():
             # download a single file from url, also use `args_file`
             with tempfile.TemporaryDirectory() as tempdir:
